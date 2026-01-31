@@ -173,7 +173,7 @@ git push -u origin main
 🛠️ 技术栈：
 React + Phaser 3 + Node.js + Claude API
 
-⭐ GitHub: https://github.com/YOUR_USERNAME/talkgame
+⭐ GitHub: https://github.com/datappt8/ENGLISH-AI
 
 #英语学习 #AI #开源 #游戏化教育
 ```
