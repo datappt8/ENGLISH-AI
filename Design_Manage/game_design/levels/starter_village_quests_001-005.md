@@ -51,25 +51,27 @@
 
 ### NPC信息
 
-- **NPC ID**: `village_chief_tom`
-- **姓名**: Chief Tom (村长汤姆)
-- **性格**: 友好、耐心、鼓励型
-- **外貌**: 60岁左右，和蔼的微笑，灰白胡子
-- **声音**: 低沉温和的男性声音
+- **NPC ID**: `village_chief_meow`
+- **姓名**: Chief Meow (村长喵喵)
+- **动物**: 橘猫 🐱
+- **性格**: 温和、智慧、有点懒洋洋但很靠谱
+- **外貌**: 橘白相间的毛色，戴着小圆眼镜，穿着村长背心，总是眯着眼睛微笑，尾巴会随心情摆动
+- **声音**: 温和的男性声音，偶尔带点"喵"的尾音
+- **经典动作**: 打招呼时会举起小爪子，说话时耳朵会动，开心时会"喵~"一声
 
 ### 对话脚本
 
 #### 第一轮 - 开场
 
-**Chief Tom**:
-> "Hello there! Welcome to Starter Village! I'm Chief Tom, the village chief. It's wonderful to see a new adventurer!"
+**Chief Meow**:
+> "Hello there, meow~ Welcome to Starter Village! I'm Chief Meow, the village chief. *purr* It's wonderful to see a new adventurer!"
 
 **玩家提示**:
 - 回应村长的问候
 - 可以说 "Hello" 或 "Hi"
 
 **期望回应示例**:
-- "Hello, Chief Tom!"
+- "Hello, Chief Meow!"
 - "Hi!"
 - "Good morning/afternoon!"
 
@@ -81,8 +83,8 @@
 
 #### 第二轮 - 询问名字
 
-**Chief Tom**:
-> "Great to meet you! What should I call you?"
+**Chief Meow**:
+> "Great to meet you, meow! *tail wagging* What should I call you?"
 
 **玩家提示**:
 - 告诉村长你的名字
@@ -94,8 +96,8 @@
 
 #### 第三轮 - 表达欢迎
 
-**Chief Tom**:
-> "Nice to meet you, [name]! This is a special place where you can practice English while having adventures. Are you ready to start?"
+**Chief Meow**:
+> "Nice to meet you, [name]! *purr purr* This is a special place where you can practice English while having adventures. Are you ready to start, meow?"
 
 **玩家提示**:
 - 回答是否准备好
@@ -108,8 +110,8 @@
 
 #### 结束
 
-**Chief Tom**:
-> "Excellent! I can see you're going to do great here. Let's begin your adventure!"
+**Chief Meow**:
+> "Excellent, meow! *stretches and yawns* I can see you're going to do great here. Let's begin your adventure!"
 
 ### 任务目标
 
@@ -178,7 +180,7 @@
 
 ### 故事背景
 
-村长汤姆想更多地了解你。在英语世界里，介绍自己是很重要的技能。让我们学习如何用英语介绍自己吧！
+村长喵喵想更多地了解你。在英语世界里，介绍自己是很重要的技能。让我们学习如何用英语介绍自己吧！
 
 ### 学习目标
 
@@ -189,16 +191,20 @@
 
 ### NPC信息
 
-- **NPC ID**: `village_chief_tom`
-- **姓名**: Chief Tom
-- （同任务001）
+- **NPC ID**: `villager_shiba`
+- **姓名**: Shiba (柴犬小柴)
+- **动物**: 柴犬 🐶
+- **性格**: 超级热情、话多、好奇心强、有点傻乎乎
+- **外貌**: 经典柴犬配色（黄色+白色），永远笑眯眯的表情，戴着红色围巾，穿着休闲冒险装，尾巴总是摇个不停
+- **声音**: 活泼清脆的声音，充满活力
+- **经典动作**: 兴奋时会跳起来，说话时会歪头，开心时尾巴摇得特别快
 
 ### 对话脚本
 
 #### 第一轮 - 询问更多信息
 
-**Chief Tom**:
-> "So, tell me a bit more about yourself. Where are you from?"
+**Shiba**:
+> "Woof woof! *tail wagging excitedly* So, tell me more about yourself! Where are you from? I LOVE meeting new friends!"
 
 **学习重点**: 国家/城市表达
 **期望回应**:
@@ -213,8 +219,8 @@
 
 #### 第二轮 - 询问爱好
 
-**Chief Tom**:
-> "Wonderful! And what do you like to do? What are your hobbies?"
+**Shiba**:
+> "Wonderful! *jumps up and down* And what do you like to do? What are your hobbies? I love running and playing fetch!"
 
 **学习重点**: 爱好表达
 **期望回应**:
@@ -229,8 +235,8 @@
 
 #### 第三轮 - 为什么学英语
 
-**Chief Tom**:
-> "That's great! Why do you want to learn English?"
+**Shiba**:
+> "That's great! *tilts head* Why do you want to learn English? I'm so curious!"
 
 **学习重点**: 表达原因
 **期望回应**:
@@ -241,8 +247,8 @@
 
 #### 第四轮 - 鼓励
 
-**Chief Tom**:
-> "Those are all excellent reasons! I'm sure you'll do very well here. One more question - how do you feel right now?"
+**Shiba**:
+> "Those are all excellent reasons! *wags tail super fast* I'm sure you'll do very well here! One more question - how do you feel right now?"
 
 **学习重点**: 感受表达
 **期望回应**:
@@ -298,7 +304,7 @@
 
 ### 故事背景
 
-村长建议你先熟悉一下新手村的环境。村民艾米(Amy)会带你参观村庄，并教你如何用英语询问地点和方向。
+村长建议你先熟悉一下新手村的环境。热情的柴犬小柴(Shiba)会带你参观村庄，并教你如何用英语询问地点和方向。
 
 ### 学习目标
 
@@ -309,18 +315,19 @@
 
 ### NPC信息
 
-- **NPC ID**: `villager_amy`
-- **姓名**: Amy (艾米)
+- **NPC ID**: `villager_shiba`
+- **姓名**: Shiba (柴犬小柴)
+- **动物**: 柴犬 🐶
 - **性格**: 活泼、热情、话多
-- **外貌**: 25岁左右，长发，笑容灿烂
-- **声音**: 清脆活泼的女性声音
+- **外貌**: 经典柴犬配色（黄色+白色），永远笑眯眯的表情，戴着红色围巾
+- **声音**: 清脆活泼的声音
 
 ### 对话脚本
 
 #### 第一轮 - 见面
 
-**Amy**:
-> "Hi there! I'm Amy. Chief Tom asked me to show you around the village. Are you ready for a tour?"
+**Shiba**:
+> "Hi there! Woof! *bouncing excitedly* I'm Shiba. Chief Meow asked me to show you around the village. Are you ready for a tour?"
 
 **期望回应**:
 - "Yes, I'm ready!"
@@ -328,8 +335,8 @@
 
 #### 第二轮 - 询问第一个地点
 
-**Amy**:
-> "Great! Let me tell you about our village. We have a bakery, a library, a training ground, and a shop. Which place would you like to visit first?"
+**Shiba**:
+> "Great! *tail wagging* Let me tell you about our village. We have a bakery, a library, a training ground, and a shop. Which place would you like to visit first?"
 
 **学习重点**: 选择表达
 **期望回应**:
@@ -339,8 +346,8 @@
 
 #### 第三轮 - 指路
 
-**Amy**:
-> "Good choice! The [place] is over there. Go straight ahead and turn right. It's next to the big tree. Can you see it?"
+**Shiba**:
+> "Good choice! *sniff sniff* The [place] is over there. Go straight ahead and turn right. It's next to the big tree. Can you see it?"
 
 **学习重点**: 方向理解
 **期望回应**:
@@ -350,8 +357,8 @@
 
 #### 第四轮 - 玩家主动询问
 
-**Amy**:
-> "This is the heart of our village! If you want to find any place, just ask me. Try asking me where something is!"
+**Shiba**:
+> "This is the heart of our village! *spins around* If you want to find any place, just ask me. Try asking me where something is!"
 
 **学习重点**: Where is 问句
 **期望回应**:
@@ -366,8 +373,8 @@
 
 #### 第五轮 - 回应指路
 
-**Amy**:
-> "The [place] is on the left, behind the bakery. It's easy to find!"
+**Shiba**:
+> "The [place] is on the left, behind the bakery. It's easy to find! *wags tail happily*"
 
 **期望回应**:
 - "Thank you!"
@@ -422,7 +429,7 @@
 
 ### 故事背景
 
-你的第一个真实场景挑战来了！面包师贝克先生(Mr. Baker)经营着村里最好的面包店。让我们学习如何在真实场景中用英语购物。
+你的第一个真实场景挑战来了！面包师小猪培根(Bacon)经营着村里最好的面包店。让我们学习如何在真实场景中用英语购物。
 
 ### 学习目标
 
@@ -433,18 +440,20 @@
 
 ### NPC信息
 
-- **NPC ID**: `baker_mr_baker`
-- **姓名**: Mr. Baker (贝克先生)
-- **性格**: 专业、友好、有点幽默
-- **外貌**: 40岁左右，戴着厨师帽，围裙上有面粉
-- **声音**: 浑厚友好的男性声音
+- **NPC ID**: `baker_bacon`
+- **姓名**: Bacon (小猪培根)
+- **动物**: 粉红小猪 🐷
+- **性格**: 憨厚、善良、有点慢热但很可靠、美食家
+- **外貌**: 粉嫩的猪皮肤，圆滚滚的身材，戴着厨师帽，穿着围裙（上面有面包图案），大大的猪鼻子
+- **声音**: 憨厚温和的男性声音，偶尔"哼哼"
+- **经典动作**: 思考时会用蹄子挠头，开心时鼻子会哼哼，推荐美食时眼睛会发光
 
 ### 对话脚本
 
 #### 第一轮 - 欢迎
 
-**Mr. Baker**:
-> "Welcome to Baker's Bakery! We have fresh bread, cookies, and cakes today. What would you like?"
+**Bacon**:
+> "Oink oink~ Welcome to Bacon's Bakery! *sniff sniff* We have fresh bread, cookies, and cakes today. What would you like?"
 
 **学习重点**: 表达需求
 **期望回应**:
@@ -459,8 +468,8 @@
 
 #### 第二轮 - 推荐
 
-**Mr. Baker**:
-> "Good choice! I recommend our chocolate cookies. They're very popular. Would you like to try them?"
+**Bacon**:
+> "Good choice! *eyes sparkling* I recommend our chocolate cookies. They're very popular. *oink* Would you like to try them?"
 
 **期望回应**:
 - "Yes, please!"
@@ -469,8 +478,8 @@
 
 #### 第三轮 - 询问价格
 
-**Mr. Baker**:
-> "The chocolate cookies are 5 coins, and the bread is 3 coins."
+**Bacon**:
+> "The chocolate cookies are 5 coins, and the bread is 3 coins. *scratches head with hoof*"
 
 **学习重点**: 价格理解和回应
 **期望回应**:
@@ -484,8 +493,8 @@
 
 #### 第四轮 - 结账
 
-**Mr. Baker**:
-> "Great! That will be [X] coins in total. Here you go! Enjoy your [items]!"
+**Bacon**:
+> "Great! *oink oink* That will be [X] coins in total. Here you go! Enjoy your [items]!"
 
 **学习重点**: 表达感谢
 **期望回应**:
@@ -495,8 +504,8 @@
 
 #### 第五轮 - 告别
 
-**Mr. Baker**:
-> "You're very welcome! Come back anytime!"
+**Bacon**:
+> "You're very welcome! *happy oink* Come back anytime!"
 
 **期望回应**:
 - "Goodbye!"
@@ -564,7 +573,7 @@
 
 ### 故事背景
 
-村民莉莉(Lily)遇到了困难，她在找她的猫咪。这是你第一次帮助别人的机会！学会提供帮助和接受感谢是很重要的社交技能。
+村民兔子露露(Lulu)遇到了困难，她在找她的猫咪。这是你第一次帮助别人的机会！学会提供帮助和接受感谢是很重要的社交技能。
 
 ### 学习目标
 
@@ -576,19 +585,21 @@
 
 ### NPC信息
 
-- **NPC ID**: `villager_lily`
-- **姓名**: Lily (莉莉)
-- **性格**: 温柔、善良、略显着急
-- **外貌**: 20岁左右，扎马尾，看起来在寻找什么
-- **声音**: 温柔但带点焦虑的女性声音
+- **NPC ID**: `villager_lulu`
+- **姓名**: Lulu (兔子露露)
+- **动物**: 白兔 🐰
+- **性格**: 温柔、善良、有点害羞、爱哭但很坚强
+- **外貌**: 雪白的毛发，粉色的长耳朵（会根据情绪变化），大大的红眼睛（容易泪汪汪），穿着粉色连衣裙，戴着蝴蝶结
+- **声音**: 温柔甜美的女性声音，有点颤抖
+- **经典动作**: 紧张时耳朵会垂下来，害羞时会捂脸，开心时会蹦蹦跳跳，着急时会跺脚
 - **情绪变化**: 开始着急 → 感激 → 开心
 
 ### 对话脚本
 
 #### 第一轮 - 注意到困难
 
-**Lily**:
-> "Oh no... where could it be? I've been looking everywhere..."
+**Lulu**:
+> "Oh no... *ears drooping* where could it be? I've been looking everywhere... *sniff*"
 
 **学习重点**: 主动提供帮助
 **期望回应**:
@@ -603,8 +614,8 @@
 
 #### 第二轮 - 说明问题
 
-**Lily**:
-> "Oh, thank you for asking! I lost my cat. Her name is Mimi. Have you seen a cat around here?"
+**Lulu**:
+> "Oh, thank you for asking! *teary eyes* I lost my cat. Her name is Mimi. *sob sob* Have you seen a cat around here?"
 
 **学习重点**: 回应并询问详情
 **期望回应**:
@@ -618,8 +629,8 @@
 
 #### 第三轮 - 描述特征
 
-**Lily**:
-> "Mimi is a small white cat with blue eyes. She has a pink collar. She's very shy and likes to hide in quiet places."
+**Lulu**:
+> "Mimi is a small white cat with blue eyes. *wipes tears* She has a pink collar. She's very shy and likes to hide in quiet places."
 
 **学习重点**: 理解描述
 **期望回应**:
@@ -630,8 +641,8 @@
 
 #### 第四轮 - 讨论寻找地点
 
-**Lily**:
-> "I last saw her near the library this morning. Maybe she's hiding somewhere nearby?"
+**Lulu**:
+> "I last saw her near the library this morning. *ears twitching nervously* Maybe she's hiding somewhere nearby?"
 
 **学习重点**: 提出建议
 **期望回应**:
@@ -642,8 +653,8 @@
 
 #### 第五轮 - 找到猫咪（剧情转折）
 
-**Lily**:
-> "Wait! I hear something... Is that... Yes! There she is! Behind that tree! Oh, Mimi!"
+**Lulu**:
+> "Wait! *ears perking up* I hear something... Is that... Yes! There she is! Behind that tree! Oh, Mimi! *hopping excitedly*"
 
 **期望回应**:
 - "Great! I'm glad we found her!"
@@ -652,8 +663,8 @@
 
 #### 第六轮 - 表达感谢
 
-**Lily**:
-> "Thank you so much for helping me! I was so worried. You're very kind!"
+**Lulu**:
+> "Thank you so much for helping me! *happy bunny hops* I was so worried. You're very kind!"
 
 **学习重点**: 谦虚回应
 **期望回应**:
@@ -664,8 +675,8 @@
 
 #### 第七轮 - 额外奖励对话
 
-**Lily**:
-> "You're such a helpful person! The village is lucky to have you. Please, take this as a thank you gift."
+**Lulu**:
+> "You're such a helpful person! *shy smile, covering face with paws* The village is lucky to have you. Please, take this as a thank you gift."
 
 **期望回应**:
 - "Thank you!"
@@ -693,7 +704,7 @@
 
 - **经验值**: +300 EXP
 - **金币**: +150 Coins
-- **特殊奖励**: 莉莉的礼物（装饰品）
+- **特殊奖励**: 露露的礼物（胡萝卜饰品）
 - **成就**:
   - 乐于助人（Helpful Soul）
   - 新手村毕业（Starter Village Graduate）
@@ -717,8 +728,8 @@
 
 如果玩家表现特别好（得分≥90），触发额外对话：
 
-**Lily**:
-> "Your English is so good! And you're very kind. I'm sure Chief Tom will be proud of you. Please visit me anytime!"
+**Lulu**:
+> "Your English is so good! *ears standing up proudly* And you're very kind. I'm sure Chief Meow will be proud of you. Please visit me anytime!"
 
 ---
 
