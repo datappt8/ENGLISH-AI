@@ -33,16 +33,32 @@ export interface Quest {
   title: string
   description: string
   zone: string
+  quest_order: number
   difficulty: 'easy' | 'medium' | 'hard' | 'boss'
-  questType: 'dialogue' | 'pronunciation' | 'listening' | 'roleplay' | 'challenge'
-  requiredLevel: number
-  rewards: {
-    exp: number
-    coins: number
-  }
-  userProgress?: UserQuestProgress
-  estimatedTimeMinutes: number
-  isLocked: boolean
+  required_level: number
+  prerequisite_quests: string[]
+  quest_type: 'dialogue' | 'pronunciation' | 'listening' | 'roleplay' | 'challenge'
+  npc_id: string
+  dialogue_context: any
+  passing_score: number
+  pronunciation_weight: number
+  grammar_weight: number
+  fluency_weight: number
+  completeness_weight: number
+  exp_reward: number
+  coin_reward: number
+  special_rewards?: any
+  time_limit_seconds?: number
+  tags: string[]
+  learning_objectives: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  // 用户进度相关
+  user_status: 'not_started' | 'in_progress' | 'completed' | 'failed'
+  user_attempts: number
+  user_best_score?: number
+  is_unlocked: boolean
 }
 
 export interface UserQuestProgress {
