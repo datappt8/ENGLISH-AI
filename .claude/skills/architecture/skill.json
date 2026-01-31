@@ -1,0 +1,18 @@
+{
+  "name": "architecture",
+  "version": "1.0.0",
+  "description": "游戏架构Agent - 负责系统架构、技术选型、数据库设计",
+  "author": "English Quest Team",
+  "tags": ["architecture", "technical", "system-design", "database"],
+  "capabilities": [
+    "系统架构设计",
+    "技术选型",
+    "数据库设计",
+    "API设计",
+    "性能优化"
+  ],
+  "dependencies": [],
+  "outputs": [
+    "Design_Manage/technical/"
+  ]
+}

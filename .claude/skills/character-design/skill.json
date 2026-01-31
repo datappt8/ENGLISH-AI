@@ -1,0 +1,18 @@
+{
+  "name": "character-design",
+  "version": "1.0.0",
+  "description": "角色设计Agent - 负责角色、场景、UI设计",
+  "author": "English Quest Team",
+  "tags": ["design", "art", "ui", "character", "visual"],
+  "capabilities": [
+    "角色设计",
+    "场景设计",
+    "UI/UX设计",
+    "视觉风格定义",
+    "资源规格制定"
+  ],
+  "dependencies": [],
+  "outputs": [
+    "Design_Manage/assets/"
+  ]
+}

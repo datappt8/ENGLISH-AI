@@ -1,0 +1,27 @@
+{
+  "name": "project-manager",
+  "version": "1.0.0",
+  "description": "项目管理Agent - 主控Agent，负责协调所有其他Agent，管理项目进度，与用户交互",
+  "author": "English Quest Team",
+  "tags": ["management", "coordination", "planning", "master-agent"],
+  "capabilities": [
+    "项目进度管理",
+    "Agent任务分配",
+    "Agent协调",
+    "用户交互决策",
+    "质量把控",
+    "风险管理"
+  ],
+  "dependencies": [
+    "game-design",
+    "architecture",
+    "character-design",
+    "code-generation",
+    "testing",
+    "monetization"
+  ],
+  "outputs": [
+    "Design_Manage/logs/",
+    "Design_Manage/iterations/"
+  ]
+}

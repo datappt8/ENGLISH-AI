@@ -1,0 +1,97 @@
+{
+  "project_name": "English Quest: AI Speaking Adventure",
+  "version": "0.1.0-planning",
+  "last_update": "2026-01-31T14:00:00Z",
+  "current_phase": "planning",
+  "current_milestone": "M0",
+  "active_agents": [],
+  "completed_tasks": [
+    "创建项目目录结构",
+    "编写游戏设计文档",
+    "编写变现策略文档",
+    "编写AI Agent架构文档",
+    "编写技术架构文档",
+    "编写项目路线图",
+    "编写Skill实现方案",
+    "创建项目日志"
+  ],
+  "pending_tasks": [
+    "创建Skill文件",
+    "设置Git仓库",
+    "初始化项目代码",
+    "详细关卡设计",
+    "技术方案细化"
+  ],
+  "next_milestone": "M1 - MVP原型完成",
+  "documents": {
+    "overview": "Design_Manage/PROJECT_OVERVIEW.md",
+    "roadmap": "Design_Manage/ROADMAP.md",
+    "game_design": "Design_Manage/game_design/GAME_DESIGN.md",
+    "monetization": "Design_Manage/game_design/MONETIZATION.md",
+    "agent_architecture": "Design_Manage/ai_agents/AGENT_ARCHITECTURE.md",
+    "skill_implementation": "Design_Manage/ai_agents/SKILL_IMPLEMENTATION.md",
+    "tech_architecture": "Design_Manage/technical/TECH_ARCHITECTURE.md",
+    "project_log": "Design_Manage/logs/PROJECT_LOG.md"
+  },
+  "skills": {
+    "game_design": {
+      "status": "not_created",
+      "path": ".claude/skills/game-design"
+    },
+    "architecture": {
+      "status": "not_created",
+      "path": ".claude/skills/architecture"
+    },
+    "character_design": {
+      "status": "not_created",
+      "path": ".claude/skills/character-design"
+    },
+    "code_generation": {
+      "status": "not_created",
+      "path": ".claude/skills/code-generation"
+    },
+    "testing": {
+      "status": "not_created",
+      "path": ".claude/skills/testing"
+    }
+  },
+  "tech_stack": {
+    "frontend": "React + TypeScript + Phaser 3",
+    "backend": "Node.js + Express + Socket.io",
+    "database": "PostgreSQL + Redis + MongoDB",
+    "ai": "Claude API + Speech Recognition API",
+    "deployment": "Docker + Cloud"
+  },
+  "milestones": [
+    {
+      "id": "M0",
+      "name": "项目规划完成",
+      "status": "in_progress",
+      "target_week": 1
+    },
+    {
+      "id": "M1",
+      "name": "MVP原型完成",
+      "status": "pending",
+      "target_week": 6
+    },
+    {
+      "id": "M2",
+      "name": "Beta版本发布",
+      "status": "pending",
+      "target_week": 14
+    },
+    {
+      "id": "M3",
+      "name": "完整版本开发完成",
+      "status": "pending",
+      "target_week": 22
+    },
+    {
+      "id": "M4",
+      "name": "正式版本发布",
+      "status": "pending",
+      "target_week": 28
+    }
+  ]
+}

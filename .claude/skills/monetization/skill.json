@@ -1,0 +1,18 @@
+{
+  "name": "monetization",
+  "version": "1.0.0",
+  "description": "游戏盈利Agent - 负责变现策略、付费设计、数据分析、收入优化",
+  "author": "English Quest Team",
+  "tags": ["monetization", "revenue", "analytics", "conversion"],
+  "capabilities": [
+    "变现策略制定",
+    "付费点设计",
+    "转化率优化",
+    "数据分析",
+    "收入预测"
+  ],
+  "dependencies": [],
+  "outputs": [
+    "Design_Manage/game_design/monetization/"
+  ]
+}
