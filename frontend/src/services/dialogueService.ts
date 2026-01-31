@@ -1,45 +1,84 @@
 import api from './api'
-import type { DialogueMessage, DialogueEvaluation, ApiResponse } from '@types/index'
+import type { DialogueMessage, ApiResponse } from '@types/index'
+
+// 发送消息响应接口
+export interface SendMessageResponse {
+  response: {
+    role: 'assistant'
+    content: string
+    audio_url: string | null
+  }
+  suggestions: string[]
+  progress: {
+    current_turn: number
+    total_turns_target: number
+    can_end: boolean
+  }
+  should_end: boolean
+}
+
+// 结束会话响应接口
+export interface EndSessionResponse {
+  session_summary: {
+    session_id: string
+    total_turns: number
+    duration_seconds: number
+    final_score: number
+  }
+  evaluation: {
+    overall_score: number
+    pronunciation_score: number
+    grammar_score: number
+    fluency_score: number
+    completeness_score: number
+    feedback: string[]
+    strengths: string[]
+    improvements: string[]
+  }
+  passed: boolean
+  can_submit_quest: boolean
+}
 
 // 发送对话消息
-export const sendDialogueMessage = async (data: {
-  sessionId: string
-  questId: string
-  message: {
-    type: 'text' | 'audio'
-    content: string
-    audioUrl?: string
-  }
-}): Promise<{
-  response: DialogueMessage
-  evaluation: DialogueEvaluation
-  suggestions: string[]
-  progress: any
-}> => {
-  const response = await api.post<any, ApiResponse<any>>('/ai/dialogue', {
-    session_id: data.sessionId,
-    quest_id: data.questId,
-    message: data.message
-  })
+export const sendDialogueMessage = async (
+  sessionId: string,
+  questId: string,
+  message: string
+): Promise<SendMessageResponse> => {
+  try {
+    const response = await api.post<any, ApiResponse<SendMessageResponse>>('/ai/dialogue', {
+      session_id: sessionId,
+      quest_id: questId,
+      message,
+    })
 
-  if (response.success && response.data) {
-    return response.data
+    if (response.success && response.data) {
+      return response.data
+    }
+
+    throw new Error(response.message || '发送消息失败')
+  } catch (error: any) {
+    console.error('发送对话消息失败:', error)
+    throw new Error(error.response?.data?.message || error.message || '发送消息失败')
   }
-  throw new Error('发送对话消息失败')
 }
 
 // 结束对话会话
-export const endDialogueSession = async (sessionId: string): Promise<{
-  sessionSummary: any
-  passed: boolean
-  canSubmitQuest: boolean
-}> => {
-  const response = await api.post<any, ApiResponse<any>>(`/ai/dialogue/${sessionId}/end`)
+export const endDialogueSession = async (sessionId: string): Promise<EndSessionResponse> => {
+  try {
+    const response = await api.post<any, ApiResponse<EndSessionResponse>>(
+      `/ai/dialogue/${sessionId}/end`
+    )
 
-  if (response.success && response.data) {
-    return response.data
+    if (response.success && response.data) {
+      return response.data
+    }
+
+    throw new Error(response.message || '结束会话失败')
+  } catch (error: any) {
+    console.error('结束对话会话失败:', error)
+    throw new Error(error.response?.data?.message || error.message || '结束会话失败')
   }
-  throw new Error('结束对话会话失败')
 }
 
 // 语音识别（使用浏览器 Web Speech API）
