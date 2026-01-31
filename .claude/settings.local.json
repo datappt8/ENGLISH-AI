@@ -3,7 +3,10 @@
     "allow": [
       "Bash(ping:*)",
       "Bash(nslookup:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "Bash(git add:*)"
     ]
   }
 }

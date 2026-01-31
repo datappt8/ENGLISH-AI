@@ -1,0 +1,56 @@
+{
+  "name": "english-quest",
+  "version": "0.1.0",
+  "description": "English Quest - AI-powered English learning game platform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "npm-run-all --parallel start:frontend start:backend",
+    "start:frontend": "cd frontend && npm run preview",
+    "start:backend": "cd backend && npm start",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "clean": "npm run clean:frontend && npm run clean:backend",
+    "clean:frontend": "cd frontend && rimraf node_modules dist",
+    "clean:backend": "cd backend && rimraf node_modules dist",
+    "clean:all": "npm run clean && rimraf node_modules",
+    "test": "npm run test:backend",
+    "test:backend": "cd backend && npm test"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^5.0.5",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/english-quest.git"
+  },
+  "keywords": [
+    "english",
+    "learning",
+    "game",
+    "ai",
+    "education"
+  ],
+  "author": "",
+  "license": "MIT"
+}
