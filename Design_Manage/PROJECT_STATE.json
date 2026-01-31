@@ -13,12 +13,14 @@
     "编写技术架构文档",
     "编写项目路线图",
     "编写Skill实现方案",
-    "创建项目日志"
+    "创建项目日志",
+    "创建所有AI Agent Skills",
+    "设置GitHub仓库",
+    "推送代码到GitHub"
   ],
   "pending_tasks": [
-    "创建Skill文件",
-    "设置Git仓库",
-    "初始化项目代码",
+    "初始化项目代码结构",
+    "创建前后端框架",
     "详细关卡设计",
     "技术方案细化"
   ],
@@ -35,24 +37,32 @@
   },
   "skills": {
     "game_design": {
-      "status": "not_created",
+      "status": "created",
       "path": ".claude/skills/game-design"
     },
     "architecture": {
-      "status": "not_created",
+      "status": "created",
       "path": ".claude/skills/architecture"
     },
     "character_design": {
-      "status": "not_created",
+      "status": "created",
       "path": ".claude/skills/character-design"
     },
     "code_generation": {
-      "status": "not_created",
+      "status": "created",
       "path": ".claude/skills/code-generation"
     },
     "testing": {
-      "status": "not_created",
+      "status": "created",
       "path": ".claude/skills/testing"
+    },
+    "monetization": {
+      "status": "created",
+      "path": ".claude/skills/monetization"
+    },
+    "project_manager": {
+      "status": "created",
+      "path": ".claude/skills/project-manager"
     }
   },
   "tech_stack": {

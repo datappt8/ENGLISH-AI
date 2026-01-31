@@ -1,0 +1,23 @@
+{
+  "name": "code-generation",
+  "version": "1.0.0",
+  "description": "代码生成Agent - 负责编写高质量的前后端代码、API实现、数据库操作",
+  "author": "English Quest Team",
+  "tags": ["coding", "development", "implementation", "fullstack"],
+  "capabilities": [
+    "前端代码开发 (React + TypeScript + Phaser)",
+    "后端代码开发 (Node.js + Express)",
+    "数据库设计和实现",
+    "API开发",
+    "代码优化和重构",
+    "集成第三方服务"
+  ],
+  "dependencies": [
+    "architecture"
+  ],
+  "outputs": [
+    "frontend/",
+    "backend/",
+    "shared/"
+  ]
+}
