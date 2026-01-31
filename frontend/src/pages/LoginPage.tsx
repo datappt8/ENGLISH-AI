@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { login } from '../services/authService'
 import './AuthPage.css'
 
 function LoginPage() {
@@ -17,16 +18,21 @@ function LoginPage() {
     setLoading(true)
 
     try {
-      // TODO: 实现实际的登录 API 调用
-      console.log('Login attempt:', formData)
+      // 调用登录 API
+      const response = await login({
+        username: formData.username,
+        password: formData.password,
+      })
 
-      // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('登录成功:', response.user)
 
       // 登录成功后跳转到游戏页面
       navigate('/game')
-    } catch (err) {
-      setError('登录失败，请检查用户名和密码')
+    } catch (err: any) {
+      // 处理错误
+      const errorMessage = err.response?.data?.error?.message || err.message || '登录失败，请检查用户名和密码'
+      setError(errorMessage)
+      console.error('登录失败:', err)
     } finally {
       setLoading(false)
     }

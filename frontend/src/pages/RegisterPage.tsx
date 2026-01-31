@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { register } from '../services/authService'
 import './AuthPage.css'
 
 function RegisterPage() {
@@ -17,7 +18,7 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    // 验证密码
+    // 前端验证
     if (formData.password !== formData.confirmPassword) {
       setError('两次输入的密码不一致')
       return
@@ -28,19 +29,30 @@ function RegisterPage() {
       return
     }
 
+    if (formData.username.length < 3 || formData.username.length > 50) {
+      setError('用户名长度应为3-50个字符')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // TODO: 实现实际的注册 API 调用
-      console.log('Register attempt:', formData)
+      // 调用注册 API
+      const response = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      })
 
-      // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('注册成功:', response.user)
 
       // 注册成功后跳转到游戏页面
       navigate('/game')
-    } catch (err) {
-      setError('注册失败，请稍后重试')
+    } catch (err: any) {
+      // 处理错误
+      const errorMessage = err.response?.data?.error?.message || err.message || '注册失败，请稍后重试'
+      setError(errorMessage)
+      console.error('注册失败:', err)
     } finally {
       setLoading(false)
     }
