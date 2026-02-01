@@ -18,7 +18,8 @@
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -h localhost -f database/init.sql)",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U englishai -h localhost -d englishai -c \"SELECT COUNT(*) as total_quests FROM quest_templates;\")",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U englishai -h localhost -d englishai -c \"SELECT id, title FROM quest_templates ORDER BY quest_order;\")",
-      "Bash(node test-session-validation.js:*)"
+      "Bash(node test-session-validation.js:*)",
+      "Bash(node test-full-system.js:*)"
     ]
   }
 }
