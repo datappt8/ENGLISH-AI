@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { DialogueManager } from '../managers/DialogueManager'
 
 /**
  * 新手村场景
@@ -9,7 +10,8 @@ export class StarterVillageScene extends Phaser.Scene {
   private player?: Phaser.GameObjects.Graphics
   private playerGridX: number = 5
   private playerGridY: number = 5
-  private npcs: Array<{ sprite: Phaser.GameObjects.Graphics; gridX: number; gridY: number; name: string }> = []
+  private npcs: Array<{ sprite: Phaser.GameObjects.Graphics; gridX: number; gridY: number; name: string; questId?: string }> = []
+  private dialogueManager?: DialogueManager
 
   // 等距投影参数
   private readonly TILE_WIDTH = 64
@@ -22,6 +24,9 @@ export class StarterVillageScene extends Phaser.Scene {
   }
 
   create() {
+    // 初始化对话管理器
+    this.dialogueManager = new DialogueManager(this)
+
     // 设置背景色
     this.cameras.main.setBackgroundColor('#87CEEB')
 
@@ -146,9 +151,9 @@ export class StarterVillageScene extends Phaser.Scene {
    */
   private createNPCs() {
     const npcData = [
-      { x: 7, y: 5, name: '村长喵喵', color: 0xFF6B6B },
-      { x: 5, y: 7, name: '面包师', color: 0xFFD93D },
-      { x: 10, y: 10, name: '图书管理员', color: 0x6BCB77 },
+      { x: 7, y: 5, name: '村长喵喵', color: 0xFF6B6B, questId: 'starter_village_001' },
+      { x: 5, y: 7, name: '面包师', color: 0xFFD93D, questId: 'starter_village_002' },
+      { x: 10, y: 10, name: '图书管理员', color: 0x6BCB77, questId: 'starter_village_003' },
     ]
 
     npcData.forEach(data => {
@@ -186,12 +191,13 @@ export class StarterVillageScene extends Phaser.Scene {
         sprite: npc,
         gridX: data.x,
         gridY: data.y,
-        name: data.name
+        name: data.name,
+        questId: data.questId
       })
 
-      // NPC点击事件
+      // NPC点击事件 - 使用新的对话系统
       npc.on('pointerdown', () => {
-        this.showDialogue(data.name)
+        this.startDialogueWithNPC(data.name, data.questId)
       })
     })
   }
@@ -214,7 +220,16 @@ export class StarterVillageScene extends Phaser.Scene {
   }
 
   /**
-   * 显示对话框
+   * 开始与NPC对话（使用AI对话系统）
+   */
+  private async startDialogueWithNPC(npcName: string, questId?: string) {
+    if (this.dialogueManager?.isDialogueActive()) return
+
+    await this.dialogueManager?.startDialogue(npcName, questId)
+  }
+
+  /**
+   * 显示对话框（旧版本，保留作为后备）
    */
   private showDialogue(npcName: string) {
     const dialogueBox = this.add.graphics()

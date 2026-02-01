@@ -39,6 +39,37 @@ export interface EndSessionResponse {
   can_submit_quest: boolean
 }
 
+// 简单聊天响应接口
+export interface ChatResponse {
+  reply: string
+  npc_name?: string
+  quest_id?: string
+}
+
+// 简单聊天请求接口
+export interface ChatRequest {
+  message: string
+  npc_name?: string
+  quest_id?: string
+  conversation_history?: Array<{ role: string; content: string }>
+}
+
+// 简单聊天（用于游戏内NPC对话）
+export const chat = async (request: ChatRequest): Promise<ChatResponse> => {
+  try {
+    const response = await api.post<any, ApiResponse<ChatResponse>>('/ai/chat', request)
+
+    if (response.success && response.data) {
+      return response.data
+    }
+
+    throw new Error(response.message || '对话失败')
+  } catch (error: any) {
+    console.error('AI聊天失败:', error)
+    throw new Error(error.response?.data?.message || error.message || '对话失败')
+  }
+}
+
 // 发送对话消息
 export const sendDialogueMessage = async (
   sessionId: string,
