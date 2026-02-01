@@ -1,14 +1,16 @@
 import jwt from 'jsonwebtoken'
 
 // JWT 配置
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d' // 7天过期
+const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '7d' // 7天过期
 
 // JWT Payload 接口
 export interface JwtPayload {
   userId: string
   username: string
   email: string
+  level: number
+  membership_tier: 'free' | 'basic' | 'premium' | 'vip'
   iat?: number
   exp?: number
 }
@@ -21,7 +23,7 @@ export interface JwtPayload {
 export const generateToken = (payload: Omit<JwtPayload, 'iat' | 'exp'>): string => {
   try {
     const token = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
+      expiresIn: JWT_EXPIRES_IN as any,
     })
     return token
   } catch (error) {

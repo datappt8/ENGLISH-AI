@@ -2,19 +2,9 @@ import { Request, Response, NextFunction } from 'express'
 import { query } from '../config/database'
 import * as ClaudeService from '../services/claudeService'
 
-// 扩展 Request 类型以包含用户信息
-interface AuthRequest extends Request {
-  user?: {
-    id: string
-    username: string
-    level: number
-    membership_tier: 'free' | 'basic' | 'premium' | 'vip'
-  }
-}
-
 // 发送对话消息
 export const sendDialogueMessage = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -114,7 +104,7 @@ export const sendDialogueMessage = async (
 
 // 结束对话会话
 export const endDialogueSession = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {

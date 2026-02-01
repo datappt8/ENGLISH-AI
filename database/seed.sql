@@ -1,7 +1,7 @@
 -- English Quest MVP 种子数据
 -- 插入初始任务模板数据
 
-\c english_quest_mvp;
+\c englishai;
 
 -- ============================================
 -- 新手村任务 (Starter Village Quests)

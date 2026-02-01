@@ -42,7 +42,7 @@ app.use(express.urlencoded({ extended: true })) // 解析 URL 编码
 app.use(morgan('dev')) // 日志
 
 // 健康检查
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 

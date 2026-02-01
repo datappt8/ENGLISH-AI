@@ -59,6 +59,8 @@ export const register = async (
       userId: user.id,
       username: user.username,
       email: user.email,
+      level: user.level,
+      membership_tier: user.membership_tier,
     })
 
     // 7. 返回成功响应
@@ -141,6 +143,8 @@ export const login = async (
       userId: user.id,
       username: user.username,
       email: user.email,
+      level: user.level,
+      membership_tier: user.membership_tier,
     })
 
     // 8. 返回成功响应
@@ -237,6 +241,8 @@ export const refreshToken = async (
       userId: user.id,
       username: user.username,
       email: user.email,
+      level: user.level,
+      membership_tier: user.membership_tier,
     })
 
     // 5. 返回新 token

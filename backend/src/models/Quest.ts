@@ -45,6 +45,22 @@ export interface UserQuest {
   updated_at: Date
 }
 
+// 任务会话接口
+export interface QuestSession {
+  id: string
+  user_id: string
+  quest_id: string
+  user_quest_id: string
+  session_id: string
+  status: 'active' | 'completed' | 'expired' | 'abandoned'
+  dialogue_history: any[]
+  current_turn: number
+  created_at: Date
+  expires_at: Date
+  completed_at?: Date
+  updated_at: Date
+}
+
 // 任务列表项（包含用户进度）
 export interface QuestWithProgress extends QuestTemplate {
   user_status: 'not_started' | 'in_progress' | 'completed' | 'failed'
@@ -126,7 +142,7 @@ export const getAllQuests = async (
     // 检查每个任务是否解锁
     const questsWithUnlockStatus = result.rows.map((quest) => {
       const isLevelMet = userLevel >= quest.required_level
-      const prerequisitesMet = quest.prerequisite_quests.every((prereqId: string) =>
+      const prerequisitesMet = !quest.prerequisite_quests || quest.prerequisite_quests.length === 0 || quest.prerequisite_quests.every((prereqId: string) =>
         completedQuestIds.has(prereqId)
       )
       const isUnlocked = isLevelMet && prerequisitesMet
@@ -189,9 +205,10 @@ export const getQuestById = async (
     )
 
     const isLevelMet = userLevel >= quest.required_level
-    const prerequisitesMet = quest.prerequisite_quests.every((prereqId: string) =>
-      completedQuestIds.has(prereqId)
-    )
+    const prerequisitesMet = !quest.prerequisite_quests || quest.prerequisite_quests.length === 0 ||
+      quest.prerequisite_quests.every((prereqId: string) =>
+        completedQuestIds.has(prereqId)
+      )
 
     return {
       ...quest,
@@ -275,17 +292,20 @@ export const startQuest = async (
  * @param questId - 任务 ID
  * @param score - 得分
  * @param completionData - 完成数据
+ * @param client - 可选的数据库客户端（用于事务）
  * @returns 是否通过
  */
 export const submitQuest = async (
   userId: string,
   questId: string,
   score: number,
-  completionData: any
+  completionData: any,
+  client?: any
 ): Promise<boolean> => {
   try {
     // 获取任务模板
-    const questTemplate = await query(
+    const queryFn = client ? client.query.bind(client) : query
+    const questTemplate = await queryFn(
       `SELECT passing_score FROM quest_templates WHERE id = $1`,
       [questId]
     )
@@ -297,10 +317,10 @@ export const submitQuest = async (
     const passingScore = questTemplate.rows[0].passing_score
     const isPassed = score >= passingScore
 
-    // 使用事务更新任务状态
-    await transaction(async (client) => {
+    // 如果提供了 client，直接使用；否则创建新事务
+    const executeInTransaction = async (txClient: any) => {
       // 获取当前最佳分数
-      const currentProgress = await client.query(
+      const currentProgress = await txClient.query(
         `SELECT best_score FROM user_quests WHERE user_id = $1 AND quest_id = $2`,
         [userId, questId]
       )
@@ -309,12 +329,12 @@ export const submitQuest = async (
       const newBestScore = Math.max(score, currentBestScore)
 
       // 更新任务进度
-      await client.query(
+      await txClient.query(
         `UPDATE user_quests
          SET status = $1,
              best_score = $2,
              completion_data = $3,
-             completed_at = CASE WHEN $1 = 'completed' THEN NOW() ELSE completed_at END,
+             completed_at = CASE WHEN $1::varchar = 'completed' THEN NOW() ELSE completed_at END,
              updated_at = NOW()
          WHERE user_id = $4 AND quest_id = $5`,
         [
@@ -328,7 +348,7 @@ export const submitQuest = async (
 
       // 如果通过，更新用户统计
       if (isPassed) {
-        await client.query(
+        await txClient.query(
           `UPDATE user_stats
            SET total_quests_completed = total_quests_completed + 1,
                last_study_date = CURRENT_DATE,
@@ -337,7 +357,7 @@ export const submitQuest = async (
           [userId]
         )
       } else {
-        await client.query(
+        await txClient.query(
           `UPDATE user_stats
            SET total_quests_failed = total_quests_failed + 1,
                updated_at = NOW()
@@ -345,11 +365,25 @@ export const submitQuest = async (
           [userId]
         )
       }
-    })
+    }
+
+    if (client) {
+      await executeInTransaction(client)
+    } else {
+      await transaction(executeInTransaction)
+    }
 
     return isPassed
   } catch (error) {
     console.error('提交任务失败:', error)
+    console.error('错误详情:', {
+      userId,
+      questId,
+      score,
+      hasClient: !!client,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined
+    })
     throw new Error('提交任务失败')
   }
 }
@@ -462,5 +496,131 @@ export const checkQuestPrerequisites = async (
   } catch (error) {
     console.error('检查前置任务失败:', error)
     throw new Error('检查前置任务失败')
+  }
+}
+
+/**
+ * 创建任务会话
+ * @param userId - 用户 ID
+ * @param questId - 任务 ID
+ * @param userQuestId - 用户任务记录 ID
+ * @param sessionId - 会话 ID
+ * @param expiresInHours - 会话过期时间（小时）
+ * @returns 会话信息
+ */
+export const createQuestSession = async (
+  userId: string,
+  questId: string,
+  userQuestId: string,
+  sessionId: string,
+  expiresInHours: number = 24
+): Promise<QuestSession> => {
+  try {
+    const result = await query(
+      `INSERT INTO quest_sessions (
+        user_id, quest_id, user_quest_id, session_id, expires_at
+      ) VALUES ($1, $2, $3, $4, NOW() + INTERVAL '${expiresInHours} hours')
+      RETURNING *`,
+      [userId, questId, userQuestId, sessionId]
+    )
+
+    return result.rows[0]
+  } catch (error) {
+    console.error('创建任务会话失败:', error)
+    throw new Error('创建任务会话失败')
+  }
+}
+
+/**
+ * 验证任务会话
+ * @param sessionId - 会话 ID
+ * @param userId - 用户 ID
+ * @param questId - 任务 ID
+ * @returns 会话信息，如果无效则返回 null
+ */
+export const validateQuestSession = async (
+  sessionId: string,
+  userId: string,
+  questId: string
+): Promise<QuestSession | null> => {
+  try {
+    const result = await query(
+      `SELECT * FROM quest_sessions
+       WHERE session_id = $1
+         AND user_id = $2
+         AND quest_id = $3
+         AND status = 'active'
+         AND expires_at > NOW()`,
+      [sessionId, userId, questId]
+    )
+
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    return result.rows[0]
+  } catch (error) {
+    console.error('验证任务会话失败:', error)
+    throw new Error('验证任务会话失败')
+  }
+}
+
+/**
+ * 完成任务会话
+ * @param sessionId - 会话 ID
+ */
+export const completeQuestSession = async (sessionId: string): Promise<void> => {
+  try {
+    await query(
+      `UPDATE quest_sessions
+       SET status = 'completed', completed_at = NOW()
+       WHERE session_id = $1`,
+      [sessionId]
+    )
+  } catch (error) {
+    console.error('完成任务会话失败:', error)
+    throw new Error('完成任务会话失败')
+  }
+}
+
+/**
+ * 更新会话对话历史
+ * @param sessionId - 会话 ID
+ * @param dialogueEntry - 对话条目
+ */
+export const updateSessionDialogue = async (
+  sessionId: string,
+  dialogueEntry: any
+): Promise<void> => {
+  try {
+    await query(
+      `UPDATE quest_sessions
+       SET dialogue_history = dialogue_history || $1::jsonb,
+           current_turn = current_turn + 1
+       WHERE session_id = $2`,
+      [JSON.stringify([dialogueEntry]), sessionId]
+    )
+  } catch (error) {
+    console.error('更新会话对话历史失败:', error)
+    throw new Error('更新会话对话历史失败')
+  }
+}
+
+/**
+ * 清理过期会话
+ */
+export const cleanupExpiredSessions = async (): Promise<number> => {
+  try {
+    const result = await query(
+      `UPDATE quest_sessions
+       SET status = 'expired'
+       WHERE status = 'active' AND expires_at < NOW()
+       RETURNING id`
+    )
+
+    return result.rows.length
+  } catch (error) {
+    console.error('清理过期会话失败:', error)
+    throw new Error('清理过期会话失败')
   }
 }

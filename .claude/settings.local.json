@@ -8,7 +8,17 @@
       "Bash(tree:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\n🔧 refactor: Reorganize project structure for cross-platform support\n\n- Created root package.json for unified project management\n- Added cross-platform install scripts (install.sh/bat)\n- Added cross-platform start scripts (start.sh/bat)\n- Updated frontend/backend package.json with cross-env and rimraf\n- Added comprehensive documentation:\n  * PROJECT_STRUCTURE.md - Complete structure guide\n  * QUICKSTART.md - Quick start guide\n  * REORGANIZATION_SUMMARY.md - Reorganization summary\n\nBenefits:\n- ✅ Complete dependency isolation (frontend/backend)\n- ✅ Cross-platform compatibility (Windows/Mac/Linux)\n- ✅ Easy to install and run\n- ✅ Ready for future mobile platform migration\n\n🎮 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(psql:*)",
+      "Bash(npm install:*)",
+      "Bash(where:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(ls:*)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -h localhost -f database/init.sql)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U englishai -h localhost -d englishai -c \"SELECT COUNT(*) as total_quests FROM quest_templates;\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U englishai -h localhost -d englishai -c \"SELECT id, title FROM quest_templates ORDER BY quest_order;\")",
+      "Bash(node test-session-validation.js:*)"
     ]
   }
 }

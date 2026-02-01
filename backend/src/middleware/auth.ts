@@ -7,9 +7,12 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
+        id: string
         userId: string
         username: string
-        membershipTier: string
+        level: number
+        membershipTier: 'free' | 'basic' | 'premium' | 'vip'
+        membership_tier: 'free' | 'basic' | 'premium' | 'vip'
       }
     }
   }
@@ -18,7 +21,7 @@ declare global {
 // JWT 认证中间件
 export const authenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -37,16 +40,20 @@ export const authenticate = async (
     }
 
     const decoded = jwt.verify(token, jwtSecret) as {
-      user_id: string
+      userId: string
       username: string
-      membership_tier: string
+      level: number
+      membership_tier: 'free' | 'basic' | 'premium' | 'vip'
     }
 
     // 将用户信息附加到请求对象
     req.user = {
-      userId: decoded.user_id,
+      id: decoded.userId,
+      userId: decoded.userId,
       username: decoded.username,
+      level: decoded.level,
       membershipTier: decoded.membership_tier,
+      membership_tier: decoded.membership_tier,
     }
 
     next()
@@ -64,7 +71,7 @@ export const authenticate = async (
 // 可选认证中间件（不强制要求登录）
 export const optionalAuthenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -74,14 +81,18 @@ export const optionalAuthenticate = async (
       const jwtSecret = process.env.JWT_SECRET
       if (jwtSecret) {
         const decoded = jwt.verify(token, jwtSecret) as {
-          user_id: string
+          userId: string
           username: string
-          membership_tier: string
+          level: number
+          membership_tier: 'free' | 'basic' | 'premium' | 'vip'
         }
         req.user = {
-          userId: decoded.user_id,
+          id: decoded.userId,
+          userId: decoded.userId,
           username: decoded.username,
+          level: decoded.level,
           membershipTier: decoded.membership_tier,
+          membership_tier: decoded.membership_tier,
         }
       }
     }

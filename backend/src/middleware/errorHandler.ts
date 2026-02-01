@@ -17,20 +17,18 @@ export class AppError extends Error {
 // 错误处理中间件
 export const errorHandler = (
   err: Error | AppError,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   // 默认错误
   let statusCode = 500
   let message = 'Internal Server Error'
-  let isOperational = false
 
   // 如果是自定义错误
   if (err instanceof AppError) {
     statusCode = err.statusCode
     message = err.message
-    isOperational = err.isOperational
   }
 
   // 开发环境打印完整错误

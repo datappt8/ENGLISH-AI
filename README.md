@@ -6,6 +6,24 @@
 
 ---
 
+## 🤖 AI Agent 团队（重要）
+
+本项目使用 **7个 AI Agent 协作开发**，使用 `@数字` 调用：
+
+| Agent | 职责 | 调用方式 |
+|-------|------|---------|
+| **@1** project-manager | 项目管理（主控，YOLO模式） | `@1 开发新功能` |
+| **@2** game-design | 游戏策划和关卡设计 | `@2 设计关卡` |
+| **@3** architecture | 系统架构和技术选型 | `@3 设计架构` |
+| **@4** character-design | 角色、场景、UI设计 | `@4 设计角色` |
+| **@5** code-generation | 前后端代码实现 | `@5 实现功能` |
+| **@6** testing | 功能测试和质量保证 | `@6 测试功能` |
+| **@7** monetization | 变现策略和数据分析 | `@7 优化转化` |
+
+**详细说明**: 查看 [AGENTS.md](AGENTS.md) | [完整指南](Design_Manage/AGENT_GUIDE.md)
+
+---
+
 ## ✨ 核心特性
 
 ### 🤖 AI智能对话
@@ -122,54 +140,78 @@ talkgame/
 
 ## 🚀 快速开始
 
+### 📚 完整安装指南
+
+**新手必看**：
+- 📖 [环境配置完成指南](ENVIRONMENT_SETUP_COMPLETE.md) - **推荐阅读**
+- 🪟 [PostgreSQL Windows 安装指南](INSTALL_POSTGRESQL_WINDOWS.md)
+- 📋 [详细安装步骤](SETUP.md)
+- ⚡ [快速启动指南](QUICKSTART.md)
+
 ### 环境要求
-- Node.js 20+
-- PostgreSQL 16+
-- Redis 7+
-- MongoDB 7+
+- ✅ Node.js 20+ (已安装 v25.2.1)
+- ⚠️ PostgreSQL 16+ (需要安装)
+- 🔧 Redis 7+ (可选)
+- 🔧 MongoDB 7+ (可选)
 
-### 安装依赖
+### 一键安装依赖
 ```bash
-# 克隆仓库
-git clone https://github.com/YOUR_USERNAME/talkgame.git
-cd talkgame
+# 安装所有依赖（前端+后端）
+npm run install:all
 
-# 安装前端依赖
-cd frontend
-npm install
-
-# 安装后端依赖
-cd ../backend
-npm install
+# 或分别安装
+npm run install:frontend  # 安装前端依赖
+npm run install:backend   # 安装后端依赖
 ```
 
 ### 配置环境变量
-```bash
-# 复制环境变量模板
-cp .env.example .env
 
-# 编辑 .env 文件，填入必要的配置
-# - DATABASE_URL
-# - REDIS_URL
-# - CLAUDE_API_KEY
-# - JWT_SECRET
+**前端配置** (`frontend/.env`)：
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_WS_URL=ws://localhost:5000
 ```
 
-### 启动开发环境
+**后端配置** (`backend/.env`)：
+```env
+# 数据库配置（必需）
+DB_PASSWORD=你的PostgreSQL密码
+
+# Claude API（必需 - AI对话功能）
+CLAUDE_API_KEY=你的Claude_API密钥
+
+# 其他配置已预设
+```
+
+### 初始化数据库
 ```bash
-# 使用Docker Compose启动所有服务
-docker-compose up -d
+# 1. 安装 PostgreSQL（参考 INSTALL_POSTGRESQL_WINDOWS.md）
 
-# 启动前端开发服务器
-cd frontend
+# 2. 运行初始化脚本
+psql -U postgres -f database/init.sql
+
+# 3. 插入种子数据（5个新手村任务）
+psql -U postgres -d english_quest_mvp -f database/seed.sql
+```
+
+### 启动项目
+```bash
+# 同时启动前后端（推荐）
 npm run dev
 
-# 启动后端开发服务器
-cd backend
-npm run dev
+# 或分别启动
+npm run dev:frontend  # 前端: http://localhost:5173
+npm run dev:backend   # 后端: http://localhost:5000
 ```
 
 访问 http://localhost:5173 开始体验！
+
+### ⚡ 当前状态
+- ✅ 前端依赖已安装
+- ✅ 后端依赖已安装
+- ✅ 环境配置文件已创建
+- ⚠️ 需要安装 PostgreSQL 并配置密码
+- ⚠️ 需要配置 Claude API 密钥
 
 ---
 

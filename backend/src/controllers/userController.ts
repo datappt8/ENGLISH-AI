@@ -54,7 +54,7 @@ export const updateUserProfile = async (
 
 // 获取用户统计
 export const getUserStats = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ) => {

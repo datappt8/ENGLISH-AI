@@ -4,25 +4,14 @@ import { query, transaction } from '../config/database'
 import {
   calculateTotalReward,
   checkLevelUp,
-  getMembershipMultiplier,
 } from '../utils/rewards'
-
-// 扩展 Request 类型以包含用户信息
-interface AuthRequest extends Request {
-  user?: {
-    id: string
-    username: string
-    level: number
-    membership_tier: 'free' | 'basic' | 'premium' | 'vip'
-  }
-}
 
 /**
  * 获取任务列表
  * 支持按区域和状态筛选
  */
 export const getQuests = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -79,7 +68,7 @@ export const getQuests = async (
  * 包含完整的任务信息、NPC 信息和用户进度
  */
 export const getQuestById = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -125,7 +114,7 @@ export const getQuestById = async (
  * 检查等级要求和前置任务，创建任务会话
  */
 export const startQuest = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -174,6 +163,19 @@ export const startQuest = async (
     // 开始任务，生成会话 ID
     const sessionId = await QuestModel.startQuest(userId, questId)
 
+    // 获取用户任务记录
+    const userQuest = await QuestModel.getUserQuestProgress(userId, questId)
+
+    if (!userQuest) {
+      return res.status(500).json({
+        success: false,
+        message: '创建任务记录失败',
+      })
+    }
+
+    // 创建会话记录
+    await QuestModel.createQuestSession(userId, questId, userQuest.id, sessionId)
+
     res.json({
       success: true,
       data: {
@@ -192,13 +194,12 @@ export const startQuest = async (
  * 验证会话、计算奖励、更新用户数据
  */
 export const submitQuest = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const userId = req.user?.id
-    const userLevel = req.user?.level || 1
     const membershipTier = req.user?.membership_tier || 'free'
 
     if (!userId) {
@@ -226,6 +227,16 @@ export const submitQuest = async (
       })
     }
 
+    // 验证会话
+    const session = await QuestModel.validateQuestSession(session_id, userId, questId)
+
+    if (!session) {
+      return res.status(400).json({
+        success: false,
+        message: '无效的会话ID或会话已过期',
+      })
+    }
+
     // 获取任务模板
     const questResult = await query(
       `SELECT * FROM quest_templates WHERE id = $1`,
@@ -250,9 +261,6 @@ export const submitQuest = async (
         message: '任务未开始或已完成',
       })
     }
-
-    // 判断是否通过
-    const isPassed = score >= questTemplate.passing_score
 
     // 获取用户连胜天数
     const statsResult = await query(
@@ -283,7 +291,8 @@ export const submitQuest = async (
         userId,
         questId,
         score,
-        completion_data
+        completion_data,
+        client
       )
 
       if (!isPassed) {
@@ -345,6 +354,9 @@ export const submitQuest = async (
          WHERE user_id = $2`,
         [today, userId]
       )
+
+      // 7. 完成会话
+      await QuestModel.completeQuestSession(session_id)
 
       return {
         result: 'passed',

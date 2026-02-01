@@ -110,12 +110,12 @@ export const sendMessage = async (
 
 /**
  * 评估用户的对话表现
- * @param sessionId - 会话 ID
+ * @param _sessionId - 会话 ID (未使用，保留用于未来扩展)
  * @param messages - 完整对话历史
  * @returns 评分和详细反馈
  */
 export const evaluateDialogue = async (
-  sessionId: string,
+  _sessionId: string,
   messages: DialogueMessage[]
 ): Promise<{
   overallScore: number
