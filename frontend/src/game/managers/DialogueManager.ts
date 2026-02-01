@@ -1,9 +1,11 @@
 import Phaser from 'phaser'
 import { chat } from '../../services/dialogueService'
+import { getVoiceManager } from './VoiceManager'
 
 /**
  * 对话管理器
  * 处理游戏内的NPC对话和AI交互
+ * 支持文本和语音输入/输出
  */
 export class DialogueManager {
   private scene: Phaser.Scene
@@ -11,9 +13,12 @@ export class DialogueManager {
   private dialogueText?: Phaser.GameObjects.Text
   private npcNameText?: Phaser.GameObjects.Text
   private optionsContainer?: Phaser.GameObjects.Container
+  private voiceButton?: Phaser.GameObjects.Container
   private isActive: boolean = false
   private currentNPC?: string
   private conversationHistory: Array<{ role: string; content: string }> = []
+  private voiceManager = getVoiceManager()
+  private isVoiceEnabled: boolean = true
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -90,6 +95,7 @@ export class DialogueManager {
 
     // 打字机效果
     this.dialogueText.setText('')
+    this.dialogueText.setColor('#ffffff')
     let index = 0
     const typewriterTimer = this.scene.time.addEvent({
       delay: 30,
@@ -101,9 +107,29 @@ export class DialogueManager {
           typewriterTimer.destroy()
           // 显示回复选项
           this.showResponseOptions()
+          // 如果启用语音，朗读NPC消息
+          if (this.isVoiceEnabled) {
+            this.speakMessage(message)
+          }
         }
       },
       loop: true
+    })
+  }
+
+  /**
+   * 朗读消息
+   */
+  private speakMessage(text: string) {
+    if (!this.voiceManager.isVoiceSupported()) return
+
+    const voice = this.voiceManager.getRecommendedVoice()
+    this.voiceManager.speak(text, {
+      voice: voice,
+      rate: 0.9,
+      onError: (error) => {
+        console.error('语音播放失败:', error)
+      }
     })
   }
 
@@ -117,13 +143,14 @@ export class DialogueManager {
     this.optionsContainer.removeAll(true)
 
     const options = [
+      { text: '🎤 语音回复', action: 'voice' },
       { text: '💬 继续对话', action: 'continue' },
       { text: '❓ 询问任务', action: 'quest' },
       { text: '👋 结束对话', action: 'end' }
     ]
 
     options.forEach((option, index) => {
-      const button = this.createOptionButton(option.text, index * 250, () => {
+      const button = this.createOptionButton(option.text, index * 200, () => {
         this.handleOptionClick(option.action)
       })
       this.optionsContainer!.add(button)
@@ -183,6 +210,11 @@ export class DialogueManager {
       return
     }
 
+    if (action === 'voice') {
+      this.startVoiceInput()
+      return
+    }
+
     let userMessage = ''
     if (action === 'continue') {
       userMessage = '请继续说'
@@ -195,6 +227,55 @@ export class DialogueManager {
 
     // 发送到AI
     await this.sendToAI(userMessage)
+  }
+
+  /**
+   * 开始语音输入
+   */
+  private startVoiceInput() {
+    if (!this.voiceManager.isVoiceSupported()) {
+      this.showSystemMessage('您的浏览器不支持语音功能')
+      return
+    }
+
+    // 显示监听状态
+    this.showSystemMessage('🎤 正在监听，请说话...')
+
+    this.voiceManager.startListening(
+      async (transcript, confidence) => {
+        // 语音识别成功
+        console.log(`识别到: ${transcript} (置信度: ${confidence})`)
+        this.showUserMessage(transcript)
+        await this.sendToAI(transcript)
+      },
+      (error) => {
+        // 语音识别失败
+        console.error('语音识别失败:', error)
+        this.showSystemMessage(`❌ ${error}`)
+        this.showResponseOptions()
+      },
+      () => {
+        // 开始监听
+        console.log('开始监听')
+      },
+      () => {
+        // 结束监听
+        console.log('结束监听')
+      }
+    )
+  }
+
+  /**
+   * 显示系统消息
+   */
+  private showSystemMessage(message: string) {
+    if (!this.dialogueText) return
+
+    this.dialogueText.setText(message)
+    this.dialogueText.setColor('#FFD700')
+
+    // 清空选项
+    this.optionsContainer?.removeAll(true)
   }
 
   /**
@@ -266,15 +347,21 @@ export class DialogueManager {
   closeDialogue() {
     if (!this.isActive) return
 
+    // 停止语音
+    this.voiceManager.stopSpeaking()
+    this.voiceManager.stopListening()
+
     this.dialogueBox?.destroy()
     this.dialogueText?.destroy()
     this.npcNameText?.destroy()
     this.optionsContainer?.destroy()
+    this.voiceButton?.destroy()
 
     this.dialogueBox = undefined
     this.dialogueText = undefined
     this.npcNameText = undefined
     this.optionsContainer = undefined
+    this.voiceButton = undefined
 
     this.isActive = false
     this.currentNPC = undefined
