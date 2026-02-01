@@ -1,10 +1,27 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
+import { StarterVillageScene } from '../game/scenes/StarterVillageScene'
 import './GamePage.css'
 
 function GamePage() {
   const gameRef = useRef<HTMLDivElement>(null)
   const phaserGameRef = useRef<Phaser.Game | null>(null)
+  const [userInfo, setUserInfo] = useState({
+    username: '玩家',
+    level: 1,
+    exp: 0,
+    coins: 100,
+    diamonds: 0
+  })
+
+  useEffect(() => {
+    // 从localStorage获取用户信息
+    const token = localStorage.getItem('token')
+    if (token) {
+      // TODO: 从API获取用户信息
+      // 暂时使用默认值
+    }
+  }, [])
 
   useEffect(() => {
     if (!gameRef.current || phaserGameRef.current) return
@@ -16,6 +33,7 @@ function GamePage() {
       height: 720,
       parent: gameRef.current,
       backgroundColor: '#87CEEB',
+      scene: [StarterVillageScene],
       physics: {
         default: 'arcade',
         arcade: {
@@ -23,38 +41,9 @@ function GamePage() {
           debug: false,
         },
       },
-      scene: {
-        preload: preload,
-        create: create,
-        update: update,
-      },
     }
 
     phaserGameRef.current = new Phaser.Game(config)
-
-    function preload(this: Phaser.Scene) {
-      // TODO: 加载游戏资源
-      console.log('Preloading assets...')
-    }
-
-    function create(this: Phaser.Scene) {
-      // 临时显示文本
-      this.add.text(640, 360, 'English Quest\n游戏场景开发中...', {
-        fontSize: '32px',
-        color: '#ffffff',
-        align: 'center',
-      }).setOrigin(0.5)
-
-      this.add.text(640, 450, '点击屏幕开始对话', {
-        fontSize: '20px',
-        color: '#ffff00',
-        align: 'center',
-      }).setOrigin(0.5)
-    }
-
-    function update(this: Phaser.Scene) {
-      // 游戏循环更新
-    }
 
     // 清理函数
     return () => {
@@ -65,27 +54,45 @@ function GamePage() {
     }
   }, [])
 
+  const handleStartDialogue = () => {
+    console.log('开始对话')
+    // TODO: 实现对话功能
+  }
+
+  const handleShowQuests = () => {
+    window.location.href = '/quests'
+  }
+
+  const handleShowProfile = () => {
+    window.location.href = '/profile'
+  }
+
+  const handleSettings = () => {
+    console.log('打开设置')
+    // TODO: 实现设置功能
+  }
+
   return (
     <div className="game-page">
       <div className="game-header">
         <div className="user-info">
-          <span className="username">玩家名称</span>
-          <span className="level">Lv 1</span>
+          <span className="username">{userInfo.username}</span>
+          <span className="level">Lv {userInfo.level}</span>
         </div>
         <div className="game-stats">
-          <span className="stat">💰 100</span>
-          <span className="stat">💎 0</span>
-          <span className="stat">⭐ 0 EXP</span>
+          <span className="stat">💰 {userInfo.coins}</span>
+          <span className="stat">💎 {userInfo.diamonds}</span>
+          <span className="stat">⭐ {userInfo.exp} EXP</span>
         </div>
       </div>
 
       <div ref={gameRef} className="game-container" />
 
       <div className="game-controls">
-        <button className="control-btn">🎤 开始对话</button>
-        <button className="control-btn">📋 任务列表</button>
-        <button className="control-btn">👤 个人资料</button>
-        <button className="control-btn">⚙️ 设置</button>
+        <button className="control-btn" onClick={handleStartDialogue}>🎤 开始对话</button>
+        <button className="control-btn" onClick={handleShowQuests}>📋 任务列表</button>
+        <button className="control-btn" onClick={handleShowProfile}>👤 个人资料</button>
+        <button className="control-btn" onClick={handleSettings}>⚙️ 设置</button>
       </div>
     </div>
   )
