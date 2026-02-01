@@ -1,17 +1,20 @@
 import Phaser from 'phaser'
 import { DialogueManager } from '../managers/DialogueManager'
+import { AssetLoader } from '../managers/AssetLoader'
 
 /**
  * 新手村场景
  * 使用简单的几何图形作为占位符，展示等距投影效果
+ * 支持自动加载美术资源（如果存在）
  */
 export class StarterVillageScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys
-  private player?: Phaser.GameObjects.Graphics
+  private player?: Phaser.GameObjects.Graphics | Phaser.GameObjects.Sprite
   private playerGridX: number = 5
   private playerGridY: number = 5
-  private npcs: Array<{ sprite: Phaser.GameObjects.Graphics; gridX: number; gridY: number; name: string; questId?: string }> = []
+  private npcs: Array<{ sprite: Phaser.GameObjects.Graphics | Phaser.GameObjects.Sprite; gridX: number; gridY: number; name: string; questId?: string }> = []
   private dialogueManager?: DialogueManager
+  private assetLoader?: AssetLoader
 
   // 等距投影参数
   private readonly TILE_WIDTH = 64
@@ -23,7 +26,18 @@ export class StarterVillageScene extends Phaser.Scene {
     super({ key: 'StarterVillageScene' })
   }
 
+  preload() {
+    // 初始化资源加载器
+    this.assetLoader = new AssetLoader(this)
+
+    // 尝试加载美术资源
+    this.assetLoader.preloadAssets()
+  }
+
   create() {
+    // 创建动画（如果资源存在）
+    this.assetLoader?.createAnimations()
+
     // 初始化对话管理器
     this.dialogueManager = new DialogueManager(this)
 
@@ -126,22 +140,34 @@ export class StarterVillageScene extends Phaser.Scene {
   private createPlayer() {
     const screenPos = this.gridToScreen(this.playerGridX, this.playerGridY)
 
-    this.player = this.add.graphics()
-    this.player.fillStyle(0x0000FF, 1)
-    this.player.fillCircle(0, 0, 15)
-    this.player.fillStyle(0xFFFFFF, 1)
-    this.player.fillCircle(0, -5, 5) // 眼睛
+    // 尝试使用精灵资源，否则使用几何图形
+    if (this.assetLoader?.hasTexture('player_idle')) {
+      // 使用精灵
+      this.player = this.add.sprite(screenPos.x, screenPos.y - 20, 'player_idle')
+      this.player.play('player_idle_anim')
+      console.log('✅ 使用玩家精灵资源')
+    } else {
+      // 使用几何图形占位符
+      this.player = this.add.graphics()
+      const graphics = this.player as Phaser.GameObjects.Graphics
+      graphics.fillStyle(0x0000FF, 1)
+      graphics.fillCircle(0, 0, 15)
+      graphics.fillStyle(0xFFFFFF, 1)
+      graphics.fillCircle(0, -5, 5) // 眼睛
+      graphics.setPosition(screenPos.x, screenPos.y - 20)
+      console.log('💡 使用玩家几何图形占位符')
+    }
 
-    this.player.setPosition(screenPos.x, screenPos.y - 20)
     this.player.setDepth(this.getDepth(this.playerGridX, this.playerGridY, 200))
 
     // 添加玩家名字
-    const nameText = this.add.text(0, -40, '玩家', {
+    const nameText = this.add.text(screenPos.x, screenPos.y - 60, '玩家', {
       fontSize: '14px',
       color: '#ffffff',
       backgroundColor: '#000000',
       padding: { x: 5, y: 2 }
     }).setOrigin(0.5)
+    nameText.setDepth(this.getDepth(this.playerGridX, this.playerGridY, 201))
 
     this.player.setData('nameText', nameText)
   }
