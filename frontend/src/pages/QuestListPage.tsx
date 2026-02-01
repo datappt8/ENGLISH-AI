@@ -19,6 +19,13 @@ function QuestListPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
 
   useEffect(() => {
+    // 检查用户是否登录
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setError('请先登录')
+      setLoading(false)
+      return
+    }
     loadQuests()
   }, [selectedZone, selectedStatus])
 
@@ -84,7 +91,11 @@ function QuestListPage() {
         <div className="error">
           <h3>❌ 加载失败</h3>
           <p>{error}</p>
-          <button onClick={loadQuests}>重试</button>
+          {error === '请先登录' ? (
+            <button onClick={() => window.location.href = '/login'}>去登录</button>
+          ) : (
+            <button onClick={loadQuests}>重试</button>
+          )}
         </div>
       </div>
     )

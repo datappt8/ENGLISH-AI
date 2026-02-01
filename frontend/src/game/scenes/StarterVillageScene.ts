@@ -16,6 +16,11 @@ export class StarterVillageScene extends Phaser.Scene {
   private dialogueManager?: DialogueManager
   private assetLoader?: AssetLoader
 
+  // 移动端触摸控制
+  private touchStartX: number = 0
+  private touchStartY: number = 0
+  private isMobile: boolean = false
+
   // 等距投影参数
   private readonly TILE_WIDTH = 64
   private readonly TILE_HEIGHT = 32
@@ -35,6 +40,9 @@ export class StarterVillageScene extends Phaser.Scene {
   }
 
   create() {
+    // 检测是否为移动设备
+    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
     // 创建动画（如果资源存在）
     this.assetLoader?.createAnimations()
 
@@ -62,6 +70,11 @@ export class StarterVillageScene extends Phaser.Scene {
 
     // 添加说明文字
     this.addInstructions()
+
+    // 移动端添加触摸滑动控制
+    if (this.isMobile) {
+      this.setupTouchControls()
+    }
 
     // 添加点击事件
     this.input.on('pointerdown', this.handleClick, this)
@@ -222,18 +235,133 @@ export class StarterVillageScene extends Phaser.Scene {
       })
 
       // NPC点击事件 - 使用新的对话系统
-      npc.on('pointerdown', () => {
+      // 使用 pointerup 以提高移动端兼容性
+      npc.on('pointerup', () => {
         this.startDialogueWithNPC(data.name, data.questId)
       })
+
+      // 防止事件冒泡
+      npc.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        pointer.event?.stopPropagation()
+      })
     })
+  }
+
+  /**
+   * 设置移动端触摸控制
+   */
+  private setupTouchControls() {
+    // 监听触摸开始
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.touchStartX = pointer.x
+      this.touchStartY = pointer.y
+    })
+
+    // 监听触摸结束（滑动）
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      const deltaX = pointer.x - this.touchStartX
+      const deltaY = pointer.y - this.touchStartY
+      const minSwipeDistance = 30 // 最小滑动距离
+
+      // 判断滑动方向
+      if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          // 横向滑动
+          if (deltaX > 0) {
+            this.movePlayer('right')
+          } else {
+            this.movePlayer('left')
+          }
+        } else {
+          // 纵向滑动
+          if (deltaY > 0) {
+            this.movePlayer('down')
+          } else {
+            this.movePlayer('up')
+          }
+        }
+      }
+    })
+
+    // 添加触摸提示（使用游戏逻辑坐标，不是实际屏幕坐标）
+    const touchHint = this.add.text(
+      this.scale.width / 2,  // 使用游戏逻辑宽度
+      this.scale.height - 50, // 使用游戏逻辑高度
+      '👆 滑动屏幕移动角色',
+      {
+        fontSize: '18px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+        padding: { x: 15, y: 10 }
+      }
+    )
+    touchHint.setOrigin(0.5)
+    touchHint.setScrollFactor(0)
+    touchHint.setDepth(3000)
+    touchHint.setAlpha(0.9)
+
+    // 5秒后淡出提示
+    this.time.delayedCall(5000, () => {
+      this.tweens.add({
+        targets: touchHint,
+        alpha: 0,
+        duration: 1000,
+        onComplete: () => touchHint.destroy()
+      })
+    })
+  }
+
+  /**
+   * 移动玩家
+   */
+  private movePlayer(direction: 'up' | 'down' | 'left' | 'right') {
+    let newGridX = this.playerGridX
+    let newGridY = this.playerGridY
+
+    switch (direction) {
+      case 'up':
+        newGridY--
+        break
+      case 'down':
+        newGridY++
+        break
+      case 'left':
+        newGridX--
+        break
+      case 'right':
+        newGridX++
+        break
+    }
+
+    // 检查边界
+    if (newGridX >= 0 && newGridX < this.MAP_WIDTH &&
+        newGridY >= 0 && newGridY < this.MAP_HEIGHT) {
+      this.playerGridX = newGridX
+      this.playerGridY = newGridY
+
+      const screenPos = this.gridToScreen(this.playerGridX, this.playerGridY)
+      this.player!.setPosition(screenPos.x, screenPos.y - 20)
+      this.player!.setDepth(this.getDepth(this.playerGridX, this.playerGridY, 200))
+
+      // 更新名字位置
+      const nameText = this.player!.getData('nameText')
+      if (nameText) {
+        nameText.setPosition(screenPos.x, screenPos.y - 60)
+        nameText.setDepth(this.getDepth(this.playerGridX, this.playerGridY, 201))
+      }
+    }
   }
 
   /**
    * 添加说明文字
    */
   private addInstructions() {
+    const instructionText = this.isMobile
+      ? '💬 点击NPC对话\n👆 滑动屏幕移动角色'
+      : '🎮 使用方向键移动\n💬 点击NPC对话\n📋 按空格键查看任务'
+
     const instructions = this.add.text(10, 10,
-      '🎮 使用方向键移动\n💬 点击NPC对话\n📋 按空格键查看任务',
+      instructionText,
       {
         fontSize: '14px',
         color: '#ffffff',

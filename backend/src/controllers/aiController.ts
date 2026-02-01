@@ -1,6 +1,56 @@
 import { Request, Response, NextFunction } from 'express'
 import { query } from '../config/database'
-import * as ClaudeService from '../services/claudeService'
+import * as QwenService from '../services/qwenService'
+
+// 简单聊天（用于游戏内NPC对话）
+export const chat = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { message, npc_name, quest_id, conversation_history } = req.body
+
+    if (!message) {
+      return res.status(400).json({
+        success: false,
+        message: '缺少消息内容',
+      })
+    }
+
+    // 构建对话历史
+    const messages: any[] = []
+
+    if (conversation_history && Array.isArray(conversation_history)) {
+      messages.push(...conversation_history.filter((msg: any) => msg.role !== 'system'))
+    }
+
+    messages.push({ role: 'user', content: message })
+
+    // 构建简单的上下文
+    const context = {
+      questId: quest_id || 'general_chat',
+      npcPersonality: npc_name ? `Friendly NPC named ${npc_name}` : 'Friendly English teacher',
+      dialogueObjective: 'Practice English conversation in a casual, friendly manner',
+      scenarioContext: 'A casual conversation in the starter village',
+      userLevel: 1
+    }
+
+    // 调用通义千问 API
+    const response = await QwenService.sendMessage(messages, context)
+
+    res.json({
+      success: true,
+      data: {
+        reply: response.content,
+        npc_name,
+        quest_id
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
 // 发送对话消息
 export const sendDialogueMessage = async (
@@ -46,7 +96,7 @@ export const sendDialogueMessage = async (
     const quest = questResult.rows[0]
 
     // 获取对话历史
-    let dialogueHistory = await ClaudeService.getDialogueHistory(session_id)
+    let dialogueHistory = await QwenService.getDialogueHistory(session_id)
 
     // 添加用户消息
     dialogueHistory.push({
@@ -55,7 +105,7 @@ export const sendDialogueMessage = async (
     })
 
     // 构建对话上下文
-    const context: ClaudeService.DialogueContext = {
+    const context: QwenService.DialogueContext = {
       questId: quest_id,
       npcPersonality: quest.npc_personality || 'friendly and helpful',
       dialogueObjective: quest.dialogue_context?.objective || 'Practice conversational English',
@@ -63,8 +113,8 @@ export const sendDialogueMessage = async (
       userLevel: req.user?.level || 1,
     }
 
-    // 调用 Claude API
-    const aiResponse = await ClaudeService.sendMessage(dialogueHistory, context)
+    // 调用通义千问 API
+    const aiResponse = await QwenService.sendMessage(dialogueHistory, context)
 
     // 添加 AI 响应到历史
     dialogueHistory.push({
@@ -73,7 +123,7 @@ export const sendDialogueMessage = async (
     })
 
     // 保存对话历史
-    await ClaudeService.saveDialogueHistory(session_id, userId, quest_id, dialogueHistory)
+    await QwenService.saveDialogueHistory(session_id, userId, quest_id, dialogueHistory)
 
     // 计算进度
     const userTurns = dialogueHistory.filter((m) => m.role === 'user').length
@@ -120,7 +170,7 @@ export const endDialogueSession = async (
     const { sessionId } = req.params
 
     // 获取对话历史
-    const dialogueHistory = await ClaudeService.getDialogueHistory(sessionId)
+    const dialogueHistory = await QwenService.getDialogueHistory(sessionId)
 
     if (dialogueHistory.length === 0) {
       return res.status(404).json({
@@ -145,7 +195,7 @@ export const endDialogueSession = async (
     const session = sessionResult.rows[0]
 
     // 评估对话
-    const evaluation = await ClaudeService.evaluateDialogue(sessionId, dialogueHistory)
+    const evaluation = await QwenService.evaluateDialogue(sessionId, dialogueHistory)
 
     // 计算会话时长
     const startTime = new Date(session.created_at)

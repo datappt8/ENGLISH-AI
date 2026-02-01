@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authenticate } from '../middleware/auth'
 import {
+  chat,
   sendDialogueMessage,
   endDialogueSession,
 } from '../controllers/aiController'
@@ -9,6 +10,9 @@ const router = Router()
 
 // 所有 AI 路由都需要认证
 router.use(authenticate)
+
+// POST /api/ai/chat - 简单聊天（游戏内NPC对话）
+router.post('/chat', chat)
 
 // POST /api/ai/dialogue - 发送对话消息
 router.post('/dialogue', sendDialogueMessage)

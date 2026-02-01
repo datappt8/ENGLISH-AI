@@ -1,8 +1,27 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 
+// 自动检测API地址
+const getApiBaseURL = () => {
+  // 如果环境变量有配置，使用环境变量
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
+  }
+
+  // 否则根据当前访问地址自动判断
+  const hostname = window.location.hostname
+
+  // 如果是localhost或127.0.0.1，使用localhost
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:5000/api'
+  }
+
+  // 否则使用当前主机的IP地址
+  return `http://${hostname}:5000/api`
+}
+
 // 创建 axios 实例
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

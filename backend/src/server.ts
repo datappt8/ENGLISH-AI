@@ -23,10 +23,15 @@ import { notFoundHandler } from './middleware/notFoundHandler'
 const app: Application = express()
 const httpServer = createServer(app)
 
+// 解析 CORS 配置
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000']
+
 // 创建 Socket.IO 服务器
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: corsOrigins,
     methods: ['GET', 'POST'],
   },
 })
@@ -34,7 +39,7 @@ const io = new SocketIOServer(httpServer, {
 // 中间件
 app.use(helmet()) // 安全头
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: corsOrigins,
   credentials: true,
 }))
 app.use(express.json()) // 解析 JSON
@@ -76,7 +81,7 @@ const PORT = process.env.PORT || 5000
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`)
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`)
-  console.log(`🌐 CORS enabled for: ${process.env.CORS_ORIGIN || 'http://localhost:3000'}`)
+  console.log(`🌐 CORS enabled for: ${corsOrigins.join(', ')}`)
 })
 
 // 优雅关闭

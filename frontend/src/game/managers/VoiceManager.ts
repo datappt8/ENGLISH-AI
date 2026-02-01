@@ -19,6 +19,110 @@ export class VoiceManager {
     this.synthesis = window.speechSynthesis
     this.checkSupport()
     this.initRecognition()
+
+    // 自动初始化和测试
+    this.autoInitialize()
+  }
+
+  /**
+   * 自动初始化和测试语音功能
+   */
+  private async autoInitialize() {
+    if (!this.isSupported) {
+      console.log('⚠️ 跳过语音初始化：浏览器不支持')
+      return
+    }
+
+    console.log('🎤 开始自动初始化语音功能...')
+
+    // 等待一小段时间，确保页面完全加载
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    try {
+      // 1. 测试麦克风权限（静默测试，不强制请求）
+      console.log('🎤 检查麦克风权限...')
+
+      // 检查权限状态（如果浏览器支持）
+      if (navigator.permissions) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName })
+          console.log('🎤 麦克风权限状态:', permissionStatus.state)
+
+          if (permissionStatus.state === 'granted') {
+            console.log('✅ 麦克风权限已授予')
+          } else if (permissionStatus.state === 'prompt') {
+            console.log('💡 首次使用时会请求麦克风权限')
+          } else {
+            console.log('⚠️ 麦克风权限被拒绝')
+          }
+        } catch (e) {
+          console.log('💡 无法查询权限状态（某些浏览器不支持）')
+        }
+      }
+
+      // 2. 测试语音合成
+      console.log('🔊 测试语音合成...')
+      await this.testSpeechSynthesis()
+
+      // 3. 预加载语音列表
+      this.loadVoices()
+
+      console.log('✅ 语音功能初始化完成')
+      console.log('💡 点击"🎤 语音回复"按钮时会请求麦克风权限')
+    } catch (error: any) {
+      console.warn('⚠️ 语音功能初始化失败:', error.message)
+    }
+  }
+
+  /**
+   * 测试语音合成
+   */
+  private async testSpeechSynthesis(): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        const utterance = new SpeechSynthesisUtterance('Test')
+        utterance.volume = 0 // 静音测试
+        utterance.rate = 2 // 快速测试
+
+        utterance.onend = () => {
+          console.log('✅ 语音合成测试成功')
+          resolve()
+        }
+
+        utterance.onerror = (error) => {
+          console.warn('⚠️ 语音合成测试失败:', error)
+          resolve() // 继续执行
+        }
+
+        // 设置超时
+        setTimeout(() => {
+          resolve() // 即使失败也继续
+        }, 2000)
+
+        speechSynthesis.speak(utterance)
+      } catch (error) {
+        console.warn('⚠️ 语音合成测试异常:', error)
+        resolve() // 继续执行
+      }
+    })
+  }
+
+  /**
+   * 预加载语音列表
+   */
+  private loadVoices() {
+    const voices = speechSynthesis.getVoices()
+    if (voices.length > 0) {
+      console.log(`✅ 已加载 ${voices.length} 个语音`)
+      const enVoices = voices.filter(v => v.lang.startsWith('en'))
+      console.log(`   其中英语语音: ${enVoices.length} 个`)
+    } else {
+      // 某些浏览器需要等待 voiceschanged 事件
+      speechSynthesis.addEventListener('voiceschanged', () => {
+        const voices = speechSynthesis.getVoices()
+        console.log(`✅ 已加载 ${voices.length} 个语音`)
+      }, { once: true })
+    }
   }
 
   /**
@@ -113,7 +217,7 @@ export class VoiceManager {
   /**
    * 开始语音识别
    */
-  startListening(
+  async startListening(
     onResult: (transcript: string, confidence: number) => void,
     onError?: (error: string) => void,
     onStart?: () => void,
@@ -131,16 +235,37 @@ export class VoiceManager {
       return
     }
 
-    this.onResultCallback = onResult
-    this.onErrorCallback = onError
-    this.onStartCallback = onStart
-    this.onEndCallback = onEnd
-
+    // 先请求麦克风权限
     try {
+      console.log('🎤 请求麦克风权限...')
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      console.log('✅ 麦克风权限已获取')
+
+      // 立即停止流，我们只是需要权限
+      stream.getTracks().forEach(track => track.stop())
+
+      // 设置回调
+      this.onResultCallback = onResult
+      this.onErrorCallback = onError
+      this.onStartCallback = onStart
+      this.onEndCallback = onEnd
+
+      // 启动识别
+      console.log('🎤 启动语音识别...')
       this.recognition.start()
-    } catch (error) {
-      console.error('启动语音识别失败:', error)
-      if (onError) onError('启动失败，请重试')
+    } catch (error: any) {
+      console.error('❌ 麦克风权限请求失败:', error)
+      let errorMsg = '无法访问麦克风'
+
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMsg = '麦克风权限被拒绝，请在浏览器设置中允许访问麦克风'
+      } else if (error.name === 'NotFoundError') {
+        errorMsg = '未找到麦克风设备'
+      } else if (error.name === 'NotReadableError') {
+        errorMsg = '麦克风被其他应用占用'
+      }
+
+      if (onError) onError(errorMsg)
     }
   }
 
@@ -252,20 +377,75 @@ export class VoiceManager {
   }
 
   /**
-   * 获取推荐的英语语音
+   * 获取推荐的英语语音（优先美国本土人声音）
    */
   getRecommendedVoice(): SpeechSynthesisVoice | undefined {
-    const voices = this.getEnglishVoices()
+    const voices = this.getVoices()
 
-    // 优先选择美式英语
-    const usVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google'))
-    if (usVoice) return usVoice
+    console.log('🔍 搜索最佳美式英语语音...')
+    console.log(`   可用语音总数: ${voices.length}`)
 
-    // 其次选择任何美式英语
-    const anyUsVoice = voices.find(v => v.lang === 'en-US')
-    if (anyUsVoice) return anyUsVoice
+    // 打印所有英语语音供调试
+    const enVoices = voices.filter(v => v.lang.startsWith('en'))
+    console.log(`   英语语音数量: ${enVoices.length}`)
+    enVoices.forEach(v => {
+      console.log(`   - ${v.name} (${v.lang}) ${v.localService ? '[本地]' : '[在线]'}`)
+    })
 
-    // 最后选择任何英语
+    // 优先级1: 明确排除中文相关的语音，只选择纯正美式英语
+    const pureUSVoices = voices.filter(v => {
+      const name = v.name.toLowerCase()
+      const lang = v.lang.toLowerCase()
+
+      // 必须是 en-US
+      if (lang !== 'en-us') return false
+
+      // 排除任何可能的中文相关
+      const excludeKeywords = ['chinese', '中文', 'mandarin', 'china', 'cn', 'zh', 'huihui', 'yaoyao']
+      if (excludeKeywords.some(keyword => name.includes(keyword))) return false
+
+      return true
+    })
+
+    console.log(`   纯正美式英语语音: ${pureUSVoices.length} 个`)
+    pureUSVoices.forEach(v => {
+      console.log(`   ✓ ${v.name} (${v.lang})`)
+    })
+
+    // 在纯正美式语音中按优先级选择
+    const preferredNames = [
+      'david',      // Microsoft David
+      'zira',       // Microsoft Zira
+      'mark',       // Microsoft Mark
+      'samantha',   // macOS Samantha
+      'alex',       // macOS Alex
+      'google us',  // Google US English
+    ]
+
+    for (const preferred of preferredNames) {
+      const voice = pureUSVoices.find(v =>
+        v.name.toLowerCase().includes(preferred)
+      )
+      if (voice) {
+        console.log(`✅ 选择语音: ${voice.name} (${voice.lang})`)
+        return voice
+      }
+    }
+
+    // 如果没有找到首选，选择第一个纯正美式语音
+    if (pureUSVoices.length > 0) {
+      console.log(`✅ 选择第一个纯正美式语音: ${pureUSVoices[0].name}`)
+      return pureUSVoices[0]
+    }
+
+    // 最后备选：任何 en-GB（英式英语）也比中文口音好
+    const gbVoice = voices.find(v => v.lang === 'en-GB')
+    if (gbVoice) {
+      console.log(`⚠️ 使用英式英语: ${gbVoice.name}`)
+      return gbVoice
+    }
+
+    console.warn('❌ 未找到合适的英语语音，使用默认')
     return voices[0]
   }
 

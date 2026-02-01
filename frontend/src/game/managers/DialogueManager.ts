@@ -19,6 +19,7 @@ export class DialogueManager {
   private conversationHistory: Array<{ role: string; content: string }> = []
   private voiceManager = getVoiceManager()
   private isVoiceEnabled: boolean = true
+  private domButtonsContainer?: HTMLDivElement
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -49,10 +50,25 @@ export class DialogueManager {
    * 创建对话框UI
    */
   private createDialogueUI() {
-    const width = 1080
-    const height = 200
-    const x = 100
-    const y = 480
+    // 获取游戏配置的尺寸（不是实际屏幕尺寸）
+    // 使用 game.config 获取游戏的逻辑尺寸，这是UI坐标系统使用的尺寸
+    const cam = this.scene.cameras.main
+    const screenWidth = this.scene.scale.width  // 游戏逻辑宽度 (1280)
+    const screenHeight = this.scene.scale.height // 游戏逻辑高度 (720)
+
+    // 调试信息：打印实际尺寸
+    console.log('=== 对话框UI创建 ===')
+    console.log('游戏逻辑尺寸:', screenWidth, 'x', screenHeight)
+    console.log('相机尺寸:', cam.width, 'x', cam.height)
+    console.log('画布实际尺寸:', this.scene.game.canvas.width, 'x', this.scene.game.canvas.height)
+    console.log('画布显示尺寸:', this.scene.game.canvas.clientWidth, 'x', this.scene.game.canvas.clientHeight)
+    console.log('缩放比例:', this.scene.scale.displayScale)
+
+    // 对话框尺寸 - 根据屏幕宽度自适应
+    const width = Math.min(900, screenWidth * 0.85) // 使用屏幕宽度的85%
+    const height = 180
+    const x = (screenWidth - width) / 2 // 水平居中
+    const y = screenHeight - height - 30 // 距离底部30px
 
     // 对话框背景
     this.dialogueBox = this.scene.add.graphics()
@@ -64,27 +80,28 @@ export class DialogueManager {
     this.dialogueBox.setDepth(3000)
 
     // NPC名字
-    this.npcNameText = this.scene.add.text(x + 20, y + 15, this.currentNPC || '', {
-      fontSize: '20px',
+    this.npcNameText = this.scene.add.text(x + width * 0.2 + 20, y + 15, this.currentNPC || '', {
+      fontSize: '18px',
       color: '#FFD700',
       fontStyle: 'bold'
     })
     this.npcNameText.setScrollFactor(0)
     this.npcNameText.setDepth(3001)
 
-    // 对话文本
-    this.dialogueText = this.scene.add.text(x + 20, y + 50, '', {
-      fontSize: '16px',
+    // 对话文本 - 向右移动20%
+    this.dialogueText = this.scene.add.text(x + width * 0.2 + 20, y + 45, '', {
+      fontSize: '15px',
       color: '#ffffff',
-      wordWrap: { width: width - 40 }
+      wordWrap: { width: width * 0.8 - 40 } // 调整换行宽度
     })
     this.dialogueText.setScrollFactor(0)
     this.dialogueText.setDepth(3001)
 
-    // 选项容器
-    this.optionsContainer = this.scene.add.container(x + 20, y + height + 20)
+    // 选项容器 - 位置设为(0,0)，按钮使用绝对坐标
+    const isMobile = screenWidth < 768
+    this.optionsContainer = this.scene.add.container(0, 0)
     this.optionsContainer.setScrollFactor(0)
-    this.optionsContainer.setDepth(3001)
+    this.optionsContainer.setDepth(3100) // 提高层级，确保在对话框之上
   }
 
   /**
@@ -121,12 +138,26 @@ export class DialogueManager {
    * 朗读消息
    */
   private speakMessage(text: string) {
-    if (!this.voiceManager.isVoiceSupported()) return
+    console.log('尝试朗读:', text)
+    console.log('语音支持:', this.voiceManager.isVoiceSupported())
+
+    if (!this.voiceManager.isVoiceSupported()) {
+      console.warn('浏览器不支持语音功能')
+      return
+    }
 
     const voice = this.voiceManager.getRecommendedVoice()
+    console.log('使用语音:', voice)
+
     this.voiceManager.speak(text, {
       voice: voice,
       rate: 0.9,
+      onStart: () => {
+        console.log('开始朗读')
+      },
+      onEnd: () => {
+        console.log('朗读结束')
+      },
       onError: (error) => {
         console.error('语音播放失败:', error)
       }
@@ -134,13 +165,14 @@ export class DialogueManager {
   }
 
   /**
-   * 显示回复选项
+   * 显示回复选项（使用DOM按钮，兼容微信浏览器）
    */
   private showResponseOptions() {
-    if (!this.optionsContainer) return
-
-    // 清空之前的选项
-    this.optionsContainer.removeAll(true)
+    // 清空之前的DOM按钮
+    if (this.domButtonsContainer) {
+      this.domButtonsContainer.remove()
+      this.domButtonsContainer = undefined
+    }
 
     const options = [
       { text: '🎤 语音回复', action: 'voice' },
@@ -149,54 +181,231 @@ export class DialogueManager {
       { text: '👋 结束对话', action: 'end' }
     ]
 
-    options.forEach((option, index) => {
-      const button = this.createOptionButton(option.text, index * 200, () => {
-        this.handleOptionClick(option.action)
-      })
-      this.optionsContainer!.add(button)
+    // 创建DOM按钮容器
+    this.domButtonsContainer = document.createElement('div')
+    this.domButtonsContainer.id = 'dialogue-buttons'
+
+    // 检测是否为移动端
+    const isMobile = window.innerWidth < 768
+
+    // 设置容器样式
+    this.domButtonsContainer.style.cssText = `
+      position: fixed;
+      ${isMobile ? `
+        bottom: 240px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      ` : `
+        bottom: 240px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        justify-content: center;
+      `}
+      z-index: 10000;
+      pointer-events: auto;
+    `
+
+    // 创建按钮
+    options.forEach(option => {
+      const button = document.createElement('button')
+      button.textContent = option.text
+      button.style.cssText = `
+        ${isMobile ? `
+          width: 260px;
+          height: 50px;
+          font-size: 15px;
+        ` : `
+          width: 170px;
+          height: 45px;
+          font-size: 13px;
+        `}
+        background: rgba(102, 126, 234, 0.9);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      `
+
+      // 点击事件
+      button.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('DOM按钮点击:', option.action)
+
+        // 视觉反馈
+        button.style.background = 'rgba(90, 74, 138, 0.9)'
+        setTimeout(() => {
+          button.style.background = 'rgba(102, 126, 234, 0.9)'
+          this.handleOptionClick(option.action)
+        }, 100)
+      }
+
+      // 触摸反馈
+      button.ontouchstart = () => {
+        button.style.background = 'rgba(118, 75, 162, 0.9)'
+      }
+      button.ontouchend = () => {
+        button.style.background = 'rgba(102, 126, 234, 0.9)'
+      }
+
+      // 悬停效果（桌面端）
+      if (!isMobile) {
+        button.onmouseenter = () => {
+          button.style.background = 'rgba(118, 75, 162, 0.9)'
+          button.style.borderColor = 'rgba(255, 255, 255, 1)'
+        }
+        button.onmouseleave = () => {
+          button.style.background = 'rgba(102, 126, 234, 0.9)'
+          button.style.borderColor = 'rgba(255, 255, 255, 0.6)'
+        }
+      }
+
+      this.domButtonsContainer!.appendChild(button)
     })
+
+    // 添加到页面
+    document.body.appendChild(this.domButtonsContainer)
   }
 
   /**
-   * 创建选项按钮
+   * 创建选项按钮（使用绝对坐标）
    */
-  private createOptionButton(text: string, x: number, callback: () => void): Phaser.GameObjects.Container {
-    const container = this.scene.add.container(x, 0)
+  private createOptionButton(
+    text: string,
+    x: number,
+    y: number,
+    callback: () => void,
+    buttonWidth: number,
+    buttonHeight: number,
+    isMobile: boolean = false
+  ): Phaser.GameObjects.Container {
+    // 创建容器，使用绝对坐标
+    const container = this.scene.add.container(x, y)
+    const fontSize = isMobile ? '15px' : '13px'
 
+    // 创建背景图形
     const bg = this.scene.add.graphics()
-    bg.fillStyle(0x667eea, 1)
-    bg.fillRoundedRect(0, 0, 230, 50, 10)
-    bg.lineStyle(2, 0xffffff, 0.5)
-    bg.strokeRoundedRect(0, 0, 230, 50, 10)
+    bg.fillStyle(0x667eea, 0.8) // 半透明背景
+    bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+    bg.lineStyle(2, 0xffffff, 0.6)
+    bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
 
-    const buttonText = this.scene.add.text(115, 25, text, {
-      fontSize: '16px',
+    // 添加调试边框（红色）
+    bg.lineStyle(2, 0xff0000, 0.5)
+    bg.strokeRect(0, 0, buttonWidth, buttonHeight)
+
+    // 创建按钮文字
+    const buttonText = this.scene.add.text(buttonWidth / 2, buttonHeight / 2, text, {
+      fontSize: fontSize,
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5)
 
     container.add([bg, buttonText])
-    container.setSize(230, 50)
-    container.setInteractive(new Phaser.Geom.Rectangle(0, 0, 230, 50), Phaser.Geom.Rectangle.Contains)
+    container.setSize(buttonWidth, buttonHeight)
 
-    // 悬停效果
-    container.on('pointerover', () => {
+    // 设置交互区域 - 使用整个按钮区域
+    container.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, buttonWidth, buttonHeight),
+      Phaser.Geom.Rectangle.Contains
+    )
+
+    console.log(`创建按钮: ${text}`)
+    console.log(`  容器位置: (${x}, ${y})`)
+    console.log(`  按钮尺寸: ${buttonWidth}x${buttonHeight}`)
+    console.log(`  交互区域: (0, 0, ${buttonWidth}, ${buttonHeight})`)
+    console.log(`  世界坐标: (${container.x}, ${container.y})`)
+
+    // 点击事件 - 使用 pointerup
+    container.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      console.log(`✅ 按钮点击: ${text}`)
+      console.log(`  指针坐标: (${pointer.x}, ${pointer.y})`)
+      console.log(`  世界坐标: (${pointer.worldX}, ${pointer.worldY})`)
+      console.log(`  容器坐标: (${container.x}, ${container.y})`)
+
+      // 阻止事件传播
+      if (pointer.event) {
+        pointer.event.stopPropagation()
+      }
+
+      // 点击视觉反馈
       bg.clear()
-      bg.fillStyle(0x764ba2, 1)
-      bg.fillRoundedRect(0, 0, 230, 50, 10)
+      bg.fillStyle(0x5a4a8a, 0.9)
+      bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
       bg.lineStyle(2, 0xffffff, 1)
-      bg.strokeRoundedRect(0, 0, 230, 50, 10)
+      bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+      // 保持调试边框
+      bg.lineStyle(2, 0xff0000, 0.5)
+      bg.strokeRect(0, 0, buttonWidth, buttonHeight)
+
+      // 执行回调
+      this.scene.time.delayedCall(100, () => {
+        callback()
+        // 恢复按钮样式
+        bg.clear()
+        bg.fillStyle(0x667eea, 0.8)
+        bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        bg.lineStyle(2, 0xffffff, 0.6)
+        bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        // 保持调试边框
+        bg.lineStyle(2, 0xff0000, 0.5)
+        bg.strokeRect(0, 0, buttonWidth, buttonHeight)
+      })
     })
 
-    container.on('pointerout', () => {
+    // 防止事件冒泡到游戏场景
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      console.log(`👇 按钮按下: ${text}`)
+      console.log(`  指针坐标: (${pointer.x}, ${pointer.y})`)
+      if (pointer.event) {
+        pointer.event.stopPropagation()
+      }
+
+      // 按下视觉反馈
       bg.clear()
-      bg.fillStyle(0x667eea, 1)
-      bg.fillRoundedRect(0, 0, 230, 50, 10)
-      bg.lineStyle(2, 0xffffff, 0.5)
-      bg.strokeRoundedRect(0, 0, 230, 50, 10)
+      bg.fillStyle(0x764ba2, 0.9)
+      bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+      bg.lineStyle(2, 0xffffff, 0.8)
+      bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+      // 保持调试边框
+      bg.lineStyle(2, 0xff0000, 0.5)
+      bg.strokeRect(0, 0, buttonWidth, buttonHeight)
     })
 
-    container.on('pointerdown', callback)
+    // 悬停效果（桌面端）
+    if (!isMobile) {
+      container.on('pointerover', () => {
+        console.log(`🖱️ 鼠标悬停: ${text}`)
+        bg.clear()
+        bg.fillStyle(0x764ba2, 0.9)
+        bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        bg.lineStyle(2, 0xffffff, 1)
+        bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        bg.lineStyle(2, 0xff0000, 0.5)
+        bg.strokeRect(0, 0, buttonWidth, buttonHeight)
+      })
+
+      container.on('pointerout', () => {
+        bg.clear()
+        bg.fillStyle(0x667eea, 0.8)
+        bg.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        bg.lineStyle(2, 0xffffff, 0.6)
+        bg.strokeRoundedRect(0, 0, buttonWidth, buttonHeight, 10)
+        bg.lineStyle(2, 0xff0000, 0.5)
+        bg.strokeRect(0, 0, buttonWidth, buttonHeight)
+      })
+    }
 
     return container
   }
@@ -232,16 +441,16 @@ export class DialogueManager {
   /**
    * 开始语音输入
    */
-  private startVoiceInput() {
+  private async startVoiceInput() {
     if (!this.voiceManager.isVoiceSupported()) {
       this.showSystemMessage('您的浏览器不支持语音功能')
       return
     }
 
     // 显示监听状态
-    this.showSystemMessage('🎤 正在监听，请说话...')
+    this.showSystemMessage('🎤 正在请求麦克风权限...')
 
-    this.voiceManager.startListening(
+    await this.voiceManager.startListening(
       async (transcript, confidence) => {
         // 语音识别成功
         console.log(`识别到: ${transcript} (置信度: ${confidence})`)
@@ -257,6 +466,7 @@ export class DialogueManager {
       () => {
         // 开始监听
         console.log('开始监听')
+        this.showSystemMessage('🎤 正在监听，请说话...')
       },
       () => {
         // 结束监听
@@ -350,6 +560,12 @@ export class DialogueManager {
     // 停止语音
     this.voiceManager.stopSpeaking()
     this.voiceManager.stopListening()
+
+    // 清理DOM按钮
+    if (this.domButtonsContainer) {
+      this.domButtonsContainer.remove()
+      this.domButtonsContainer = undefined
+    }
 
     this.dialogueBox?.destroy()
     this.dialogueText?.destroy()
